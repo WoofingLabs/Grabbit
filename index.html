@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>添加 Grabbit 流动性 & 参数设置</title>
+    <title>添加 Grabbit 流动性</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="https://woofswap.finance/image/tokens/star.png" type="image/x-icon" />
     <style>
@@ -144,35 +144,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .param-section {
-            background: var(--input-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-        }
-        .param-section label {
-            display: block;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
-        .param-section input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            background: var(--input-bg);
-            border: none;
-            border-radius: 10px;
-            color: var(--text-color);
-            font-size: 1em;
-        }
-        .param-section input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
-        }
-        .param-section .toggle-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
         @media (max-width: 480px) {
             body { padding: 10px; }
             .container { padding: 15px; }
@@ -184,7 +155,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">添加 Grabbit 流动性 & 参数设置</div>
+        <div class="header">添加 Grabbit 流动性</div>
         <div class="connect-section">
             <button id="connectWalletButton">连接钱包</button>
             <div id="networkStatus" class="status">点击连接钱包...</div>
@@ -201,44 +172,9 @@
             <button class="action-button" id="authorizeButton" disabled>授权 Grabbit</button>
             <button class="action-button" id="addLiquidityButton" disabled>添加流动性</button>
         </div>
-        <div class="param-section">
-            <h3 style="font-size: 1em; margin-bottom: 10px;">合约参数设置</h3>
-            <label>买入营销费用（%）</label>
-            <input type="number" id="buyMarketingFee" placeholder="输入买入营销费用（如 0）" value="0">
-            <label>买入流动性费用（%）</label>
-            <input type="number" id="buyLiquidityFee" placeholder="输入买入流动性费用（如 2）" value="2">
-            <label>买入 ETH 奖励费用（%）</label>
-            <input type="number" id="buyETHRewardsFee" placeholder="输入买入 ETH 奖励费用（如 2）" value="2">
-            <label>买入燃烧费用（%）</label>
-            <input type="number" id="buyBurnFee" placeholder="输入买入燃烧费用（如 0）" value="0">
-            <label>卖出营销费用（%）</label>
-            <input type="number" id="sellMarketingFee" placeholder="输入卖出营销费用（如 0）" value="0">
-            <label>卖出流动性费用（%）</label>
-            <input type="number" id="sellLiquidityFee" placeholder="输入卖出流动性费用（如 2）" value="2">
-            <label>卖出 ETH 奖励费用（%）</label>
-            <input type="number" id="sellETHRewardsFee" placeholder="输入卖出 ETH 奖励费用（如 2）" value="2">
-            <label>卖出燃烧费用（%）</label>
-            <input type="number" id="sellBurnFee" placeholder="输入卖出燃烧费用（如 0）" value="0">
-            <label>Swap 触发数量（Grabbit 单位）</label>
-            <input type="number" id="swapAtAmount" placeholder="输入 Swap 触发数量" value="0">
-            <label>最小持有量（Grabbit 单位）</label>
-            <input type="number" id="mushHoldNum" placeholder="输入最小持有量" value="5250000">
-            <label>空投金额（Grabbit 单位）</label>
-            <input type="number" id="airdropAmount" placeholder="输入空投金额" value="2625000">
-            <label>空投 BNB 数量（wei）</label>
-            <input type="number" id="airdropBNB" placeholder="输入空投 BNB 数量" value="50000000000000000">
-            <label>转账费用开关</label>
-            <div class="toggle-row">
-                <input type="checkbox" id="enableTransferFee">
-                <label>启用转账费用</label>
-            </div>
-            <label>转账费用（%）</label>
-            <input type="number" id="transferFee" placeholder="输入转账费用（如 0）" value="0">
-            <button class="action-button" id="setParamsButton" disabled>设置参数</button>
-        </div>
         <div class="dog-section">
             <img src="https://woofswap.finance/image/tokens/star.png" alt="WSTAR">
-            <div class="dog-message" id="dogMessage">"Woof! 连接钱包以添加流动性或设置参数！"</div>
+            <div class="dog-message" id="dogMessage">"Woof! 连接钱包以添加流动性！"</div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
@@ -298,63 +234,6 @@
             }
         ];
 
-        const tokenAbi = [
-            {
-                "inputs": [
-                    { "internalType": "uint256[]", "name": "customs", "type": "uint256[]" }
-                ],
-                "name": "completeCustoms",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    { "internalType": "uint256", "name": "newValue", "type": "uint256" }
-                ],
-                "name": "setSwapAtAmount",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    { "internalType": "uint256", "name": "newValue", "type": "uint256" }
-                ],
-                "name": "setAirdropAmount",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    { "internalType": "uint256", "name": "newValue", "type": "uint256" }
-                ],
-                "name": "setAirdropBNB",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    { "internalType": "uint256", "name": "newValue", "type": "uint256" }
-                ],
-                "name": "setTransferFee",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    { "internalType": "bool", "name": "status", "type": "bool" }
-                ],
-                "name": "setEnableTransferFee",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
-
         const chains = {
             RufusChain: {
                 chainId: 10088,
@@ -365,7 +244,7 @@
             }
         };
 
-        let web3, account, routerContract, GrabbitContract, tokenContract;
+        let web3, account, routerContract, GrabbitContract;
 
         const dogMessages = {
             connectSuccess: ["Woof! 钱包已连接，准备添加流动性！", "Arf! 连接成功，开始吧！", "Bark! 钱包就位，行动起来！"],
@@ -381,10 +260,7 @@
             invalidToken: ["Woof! 代币地址有误，请检查！", "Arf! 代币问题，验证地址！", "Bark! 代币错误，请检查！"],
             insufficientBalance: ["Woof! Grabbit 或 GT 余额不足！", "Arf! 余额不够，补充点吧！", "Bark! 需要更多 Grabbit 或 GT！"],
             insufficientGas: ["Woof! GT 不足以支付 Gas 费用！", "Arf! Gas 费用不够，补充 GT！", "Bark! 需要更多 GT 用于 Gas！"],
-            insufficientAllowance: ["Woof! Grabbit 未授权，请先授权！", "Arf! 需要授权 Grabbit！", "Bark! 先授权 Grabbit 再操作！"],
-            setParamsStart: ["Woof! 正在设置参数，稍等！", "Arf! 参数设置中！", "Bark! 正在更新合约参数！"],
-            setParamsSuccess: ["Woof! 参数设置成功！", "Arf! 参数已更新！", "Bark! 合约参数设置完成！"],
-            setParamsFail: ["Woof! 参数设置失败，请重试！", "Arf! 参数设置出错！", "Bark! 设置参数失败！"]
+            insufficientAllowance: ["Woof! Grabbit 未授权，请先授权！", "Arf! 需要授权 Grabbit！", "Bark! 先授权 Grabbit 再操作！"]
         };
 
         function getRandomMessage(type) {
@@ -420,7 +296,6 @@
                     await checkBalances();
                     document.getElementById('networkStatus').innerText = `已连接到 Gate Layer`;
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
-                    await checkOwnerStatus();
                 } catch (error) {
                     console.error("连接错误:", error);
                     document.getElementById('networkStatus').innerText = '钱包连接失败';
@@ -461,7 +336,6 @@
             try {
                 routerContract = new web3.eth.Contract(routerAbi, web3.utils.toChecksumAddress(routerAddress));
                 GrabbitContract = new web3.eth.Contract(erc20Abi, web3.utils.toChecksumAddress(GrabbitAddress));
-                tokenContract = new web3.eth.Contract(tokenAbi, web3.utils.toChecksumAddress(GrabbitAddress));
             } catch (error) {
                 console.error("合约初始化错误:", error);
                 document.getElementById('networkStatus').innerText = '合约初始化失败';
@@ -473,14 +347,14 @@
             if (!web3 || !account) {
                 document.getElementById('authorizeButton').disabled = true;
                 document.getElementById('addLiquidityButton').disabled = true;
-                document.getElementById('setParamsButton').disabled = true;
                 document.getElementById('GrabbitBalance').innerText = '余额: 0';
                 document.getElementById('gtBalance').innerText = '余额: 0';
                 return;
             }
             try {
                 const GrabbitBalance = await GrabbitContract.methods.balanceOf(account).call();
-                document.getElementById('GrabbitBalance').innerText = `余额: ${Number(web3.utils.fromWei(GrabbitBalance, 'mwei')).toLocaleString()}`;
+                // 小数点位数为 1，转换为人类可读格式
+                document.getElementById('GrabbitBalance').innerText = `余额: ${Number(GrabbitBalance / 10).toLocaleString()}`;
                 const gtBalance = await web3.eth.getBalance(account);
                 document.getElementById('gtBalance').innerText = `余额: ${Number(web3.utils.fromWei(gtBalance, 'ether')).toLocaleString()} GT`;
                 await checkAuthorizationStatus();
@@ -490,17 +364,6 @@
                 document.getElementById('gtBalance').innerText = '余额: 查询失败';
                 document.getElementById('authorizeButton').disabled = true;
                 document.getElementById('addLiquidityButton').disabled = true;
-                document.getElementById('setParamsButton').disabled = true;
-            }
-        }
-
-        async function checkOwnerStatus() {
-            try {
-                const owner = await tokenContract.methods.owner().call();
-                document.getElementById('setParamsButton').disabled = owner.toLowerCase() !== account.toLowerCase();
-            } catch (error) {
-                console.error("检查所有者状态错误:", error);
-                document.getElementById('setParamsButton').disabled = true;
             }
         }
 
@@ -517,9 +380,10 @@
                 return;
             }
             try {
-                const amountWei = web3.utils.toWei(GrabbitAmount, 'mwei');
+                // 小数点位数为 1，转换为合约单位 (乘以 10^1)
+                const amountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const allowance = await GrabbitContract.methods.allowance(account, routerAddress).call();
-                const sufficientAllowance = web3.utils.toBN(allowance).gte(web3.utils.toBN(amountWei));
+                const sufficientAllowance = web3.utils.toBN(allowance).gte(amountWei);
                 document.getElementById('authorizeButton').disabled = sufficientAllowance;
                 document.getElementById('addLiquidityButton').disabled = !sufficientAllowance;
                 document.getElementById('networkStatus').innerText = sufficientAllowance ? "Grabbit 已授权，准备添加流动性" : "请先授权 Grabbit";
@@ -553,7 +417,8 @@
                 status.innerText = "正在授权 Grabbit...";
                 dogMessage.innerText = getRandomMessage('authorizeStart');
 
-                const amountWei = web3.utils.toWei(GrabbitAmount, 'mwei');
+                // 小数点位数为 1，转换为合约单位
+                const amountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const gasPrice = await web3.eth.getGasPrice();
                 const estimatedGas = await GrabbitContract.methods.approve(
                     routerAddress,
@@ -622,7 +487,8 @@
                 status.innerText = "检查余额和 Gas...";
                 dogMessage.innerText = getRandomMessage('addLiquidityStart');
 
-                const GrabbitAmountWei = web3.utils.toWei(GrabbitAmount, 'mwei');
+                // 小数点位数为 1，转换为合约单位
+                const GrabbitAmountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const gtAmountWei = web3.utils.toWei(gtAmount, 'ether');
                 const slippagePercent = parseFloat(slippage) / 100;
                 const GrabbitAmountMin = web3.utils.toBN(GrabbitAmountWei).mul(web3.utils.toBN((1 - slippagePercent) * 1000)).div(web3.utils.toBN(1000));
@@ -630,7 +496,7 @@
 
                 const GrabbitBalance = await GrabbitContract.methods.balanceOf(account).call();
                 const gtBalance = await web3.eth.getBalance(account);
-                if (web3.utils.toBN(GrabbitBalance).lt(web3.utils.toBN(GrabbitAmountWei))) {
+                if (web3.utils.toBN(GrabbitBalance).lt(GrabbitAmountWei)) {
                     status.innerText = "Grabbit 余额不足";
                     dogMessage.innerText = getRandomMessage('insufficientBalance');
                     return;
@@ -642,7 +508,7 @@
                 }
 
                 const allowance = await GrabbitContract.methods.allowance(account, routerAddress).call();
-                if (web3.utils.toBN(allowance).lt(web3.utils.toBN(GrabbitAmountWei))) {
+                if (web3.utils.toBN(allowance).lt(GrabbitAmountWei)) {
                     status.innerText = "请先授权 Grabbit";
                     dogMessage.innerText = getRandomMessage('insufficientAllowance');
                     return;
@@ -674,7 +540,7 @@
                 ).send({
                     from: account,
                     value: gtAmountWei,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 3000000))
+                    gas: web3.utils.toHex(Math.min(estimatedBox * 2, 3000000))
                 });
                 await waitForTransaction(tx.transactionHash);
 
@@ -699,170 +565,16 @@
             }
         }
 
-        async function setParams() {
-            const status = document.getElementById('networkStatus');
-            const setParamsButton = document.getElementById('setParamsButton');
-            const dogMessage = document.getElementById('dogMessage');
-
-            const buyMarketingFee = document.getElementById('buyMarketingFee').value.trim();
-            const buyLiquidityFee = document.getElementById('buyLiquidityFee').value.trim();
-            const buyETHRewardsFee = document.getElementById('buyETHRewardsFee').value.trim();
-            const buyBurnFee = document.getElementById('buyBurnFee').value.trim();
-            const sellMarketingFee = document.getElementById('sellMarketingFee').value.trim();
-            const sellLiquidityFee = document.getElementById('sellLiquidityFee').value.trim();
-            const sellETHRewardsFee = document.getElementById('sellETHRewardsFee').value.trim();
-            const sellBurnFee = document.getElementById('sellBurnFee').value.trim();
-            const swapAtAmount = document.getElementById('swapAtAmount').value.trim();
-            const mushHoldNum = document.getElementById('mushHoldNum').value.trim();
-            const airdropAmount = document.getElementById('airdropAmount').value.trim();
-            const airdropBNB = document.getElementById('airdropBNB').value.trim();
-            const enableTransferFee = document.getElementById('enableTransferFee').checked;
-            const transferFee = document.getElementById('transferFee').value.trim();
-
-            if (!web3 || !account || !tokenContract) {
-                status.innerText = "请连接钱包或检查合约地址";
-                dogMessage.innerText = getRandomMessage('connectFail');
-                return;
-            }
-            if (
-                !buyMarketingFee || isNaN(buyMarketingFee) || buyMarketingFee < 0 ||
-                !buyLiquidityFee || isNaN(buyLiquidityFee) || buyLiquidityFee < 0 ||
-                !buyETHRewardsFee || isNaN(buyETHRewardsFee) || buyETHRewardsFee < 0 ||
-                !buyBurnFee || isNaN(buyBurnFee) || buyBurnFee < 0 ||
-                !sellMarketingFee || isNaN(sellMarketingFee) || sellMarketingFee < 0 ||
-                !sellLiquidityFee || isNaN(sellLiquidityFee) || sellLiquidityFee < 0 ||
-                !sellETHRewardsFee || isNaN(sellETHRewardsFee) || sellETHRewardsFee < 0 ||
-                !sellBurnFee || isNaN(sellBurnFee) || sellBurnFee < 0 ||
-                !swapAtAmount || isNaN(swapAtAmount) || swapAtAmount < 0 ||
-                !mushHoldNum || isNaN(mushHoldNum) || mushHoldNum < 0 ||
-                !airdropAmount || isNaN(airdropAmount) || airdropAmount < 0 ||
-                !airdropBNB || isNaN(airdropBNB) || airdropBNB < 0 ||
-                !transferFee || isNaN(transferFee) || transferFee < 0
-            ) {
-                status.innerText = "请输入有效的参数值";
-                dogMessage.innerText = getRandomMessage('invalidInput');
-                return;
-            }
-
-            try {
-                setParamsButton.disabled = true;
-                setParamsButton.innerHTML = '设置中... <span class="spinner"></span>';
-                status.innerText = "正在设置参数...";
-                dogMessage.innerText = getRandomMessage('setParamsStart');
-
-                // 设置费用
-                const customs = [
-                    parseInt(buyMarketingFee * 100),
-                    parseInt(buyLiquidityFee * 100),
-                    parseInt(buyETHRewardsFee * 100),
-                    parseInt(buyBurnFee * 100),
-                    parseInt(sellMarketingFee * 100),
-                    parseInt(sellLiquidityFee * 100),
-                    parseInt(sellETHRewardsFee * 100),
-                    parseInt(sellBurnFee * 100)
-                ];
-                if (customs.some(fee => fee + customs[3] > 2500 || fee + customs[7] > 2500)) {
-                    status.innerText = "费用设置过高（不得超过25%）";
-                    dogMessage.innerText = getRandomMessage('invalidInput');
-                    return;
-                }
-                const gasPrice = await web3.eth.getGasPrice();
-                let estimatedGas = await tokenContract.methods.completeCustoms(customs).estimateGas({ from: account });
-                let tx = await tokenContract.methods.completeCustoms(customs).send({
-                    from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                });
-                await waitForTransaction(tx.transactionHash);
-
-                // 设置 Swap 触发数量
-                estimatedGas = await tokenContract.methods.setSwapAtAmount(web3.utils.toWei(swapAtAmount, 'mwei')).estimateGas({ from: account });
-                tx = await tokenContract.methods.setSwapAtAmount(web3.utils.toWei(swapAtAmount, 'mwei')).send({
-                    from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                });
-                await waitForTransaction(tx.transactionHash);
-
-                // 设置空投金额
-                estimatedGas = await tokenContract.methods.setAirdropAmount(web3.utils.toWei(airdropAmount, 'mwei')).estimateGas({ from: account });
-                tx = await tokenContract.methods.setAirdropAmount(web3.utils.toWei(airdropAmount, 'mwei')).send({
-                    from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                });
-                await waitForTransaction(tx.transactionHash);
-
-                // 设置空投 BNB 数量
-                estimatedGas = await tokenContract.methods.setAirdropBNB(airdropBNB).estimateGas({ from: account });
-                tx = await tokenContract.methods.setAirdropBNB(airdropBNB).send({
-                    from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                });
-                await waitForTransaction(tx.transactionHash);
-
-                // 设置转账费用开关
-                estimatedGas = await tokenContract.methods.setEnableTransferFee(enableTransferFee).estimateGas({ from: account });
-                tx = await tokenContract.methods.setEnableTransferFee(enableTransferFee).send({
-                    from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                });
-                await waitForTransaction(tx.transactionHash);
-
-                // 设置转账费用
-                if (enableTransferFee) {
-                    estimatedGas = await tokenContract.methods.setTransferFee(parseInt(transferFee * 100)).estimateGas({ from: account });
-                    tx = await tokenContract.methods.setTransferFee(parseInt(transferFee * 100)).send({
-                        from: account,
-                        gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
-                    });
-                    await waitForTransaction(tx.transactionHash);
-                }
-
-                status.innerText = "参数设置成功！";
-                dogMessage.innerText = getRandomMessage('setParamsSuccess');
-            } catch (error) {
-                console.error("设置参数错误:", error);
-                if (error.code === 4001) {
-                    status.innerText = "用户取消了交易";
-                    dogMessage.innerText = getRandomMessage('userDenied');
-                } else if (error.message.includes('insufficient funds for gas')) {
-                    status.innerText = "GT 不足以支付 Gas 费用";
-                    dogMessage.innerText = getRandomMessage('insufficientGas');
-                } else {
-                    status.innerText = "参数设置失败: " + (error.message || "未知错误");
-                    dogMessage.innerText = getRandomMessage('setParamsFail');
-                }
-            } finally {
-                setParamsButton.disabled = false;
-                setParamsButton.innerHTML = '设置参数';
-                await checkOwnerStatus();
-            }
-        }
-
         document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
         document.getElementById('authorizeButton').addEventListener('click', authorizeToken);
         document.getElementById('addLiquidityButton').addEventListener('click', addLiquidity);
-        document.getElementById('setParamsButton').addEventListener('click', setParams);
         document.getElementById('GrabbitAmount').addEventListener('input', checkAuthorizationStatus);
         document.getElementById('gtAmount').addEventListener('input', checkAuthorizationStatus);
         document.getElementById('slippage').addEventListener('input', checkAuthorizationStatus);
-        document.getElementById('buyMarketingFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('buyLiquidityFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('buyETHRewardsFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('buyBurnFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('sellMarketingFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('sellLiquidityFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('sellETHRewardsFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('sellBurnFee').addEventListener('input', checkOwnerStatus);
-        document.getElementById('swapAtAmount').addEventListener('input', checkOwnerStatus);
-        document.getElementById('mushHoldNum').addEventListener('input', checkOwnerStatus);
-        document.getElementById('airdropAmount').addEventListener('input', checkOwnerStatus);
-        document.getElementById('airdropBNB').addEventListener('input', checkOwnerStatus);
-        document.getElementById('enableTransferFee').addEventListener('change', checkOwnerStatus);
-        document.getElementById('transferFee').addEventListener('input', checkOwnerStatus);
 
         document.addEventListener('DOMContentLoaded', () => {
             checkBalances();
             checkAuthorizationStatus();
-            checkOwnerStatus();
         });
     </script>
 </body>
