@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购买 GDOG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="https://woofswap.finance/image/tokens/star.png" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .connect-section button {
+            padding: 12px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+        .connect-section button:hover { background: #e68a00; }
+        .input-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        .input-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
+        }
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: #ff9100;
+        }
+        .action-button {
+            padding: 15px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .action-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .action-button:hover:not(:disabled) { background: #e68a00; }
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .dog-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .dog-section img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .dog-message {
+            display: none;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .progress {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--input-bg);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            font-size: 0.8em;
+        }
+        .progress-item {
+            margin: 5px 0;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+            .dog-section img { width: 50px; height: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">购买 GDOG</div>
+        <div class="connect-section">
+            <button id="connectWalletButton">连接钱包</button>
+            <div id="networkStatus" class="status">点击连接钱包...</div>
+        </div>
+        <div class="input-box">
+            <label>GT 数量</label>
+            <input type="text" id="gtAmount" placeholder="输入 GT 数量">
+            <div class="balance-row"><span>GT 余额</span><span id="gtBalance">余额: 0</span></div>
+            <label>GDOG 数量</label>
+            <input type="text" id="gdogAmount" placeholder="自动计算" readonly>
+            <div class="balance-row"><span>GDOG 余额</span><span id="gdogBalance">余额: 0</span></div>
+            <label>滑点容忍度（%）</label>
+            <input type="text" id="slippage" placeholder="输入滑点容忍度（如 0.5）" value="0.5">
+            <button class="action-button" id="swapButton" disabled>购买 GDOG</button>
+        </div>
+        <div class="dog-section">
+            <img src="https://woofswap.finance/image/tokens/star.png" alt="WSTAR">
+            <div class="dog-message" id="dogMessage"></div>
+        </div>
+        <div class="progress" id="progressLog">
+            <div class="progress-item" id="progressStatus">等待操作...</div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        const routerAddress = '0x12814690f59a9ce8ba87dc8cf0692442baa9c097';
+        const gdogAddress = '0xa037355662d34d9b57de209e22544a4862f5a30c';
+        const wgtAddress = '0x6803b8e93b13941f6b73b82e324b80251b3de338';
+        const pairAddress = '0xd4dd8a7f350e2e4a0a06742faed5577a9c1b2f31';
+
+        const routerAbi = [
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" },
+                    { "internalType": "address[]", "name": "path", "type": "address[]" },
+                    { "internalType": "address", "name": "to", "type": "address" },
+                    { "internalType": "uint256", "name": "deadline", "type": "uint256" }
+                ],
+                "name": "swapExactETHForTokens",
+                "outputs": [
+                    { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }
+                ],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+                    { "internalType": "address[]", "name": "path", "type": "address[]" }
+                ],
+                "name": "getAmountsOut",
+                "outputs": [
+                    { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const erc20Abi = [
+            {
+                "constant": true,
+                "inputs": [{ "name": "_owner", "type": "address" }],
+                "name": "balanceOf",
+                "outputs": [{ "name": "balance", "type": "uint256" }],
+                "type": "function"
+            }
+        ];
+
+        const pairAbi = [
+            {
+                "inputs": [],
+                "name": "getReserves",
+                "outputs": [
+                    { "internalType": "uint112", "name": "_reserve0", "type": "uint112" },
+                    { "internalType": "uint112", "name": "_reserve1", "type": "uint112" },
+                    { "internalType": "uint32", "name": "_blockTimestampLast", "type": "uint32" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "token0",
+                "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const chains = {
+            RufusChain: {
+                chainId: 10088,
+                chainName: 'Gate Layer',
+                rpcUrl: 'https://gatelayer-rpc.gatenode.cc',
+                blockExplorer: 'https://www.gatescan.org/gatelayer/',
+                nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 }
+            }
+        };
+
+        let web3, account, routerContract, gdogContract, pairContract;
+
+        async function waitForTransaction(txHash, maxAttempts = 30) {
+            let attempts = 0;
+            document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
+            while (attempts < maxAttempts) {
+                const receipt = await web3.eth.getTransactionReceipt(txHash).catch(() => null);
+                if (receipt) {
+                    if (receipt.status) {
+                        document.getElementById('progressStatus').innerText = `交易成功: ${txHash}`;
+                        return receipt;
+                    }
+                    throw new Error(`交易失败: ${txHash}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+                document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
+            }
+            throw new Error(`交易 ${txHash} 未在 ${maxAttempts} 次尝试后确认`);
+        }
+
+        async function initializeWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    account = (await web3.eth.getAccounts())[0];
+                    document.getElementById('connectWalletButton').innerText = `已连接: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                    await switchNetwork('RufusChain');
+                    await initializeContracts();
+                    await checkBalances();
+                    document.getElementById('networkStatus').innerText = `已连接到 Gate Layer`;
+                } catch (error) {
+                    document.getElementById('networkStatus').innerText = '钱包连接失败';
+                    document.getElementById('progressStatus').innerText = `错误: 连接失败 - ${error.message}`;
+                }
+            } else {
+                document.getElementById('networkStatus').innerText = '请安装 MetaMask';
+            }
+        }
+
+        async function switchNetwork(chain) {
+            const chainConfig = chains[chain];
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: `0x${chainConfig.chainId.toString(16)}` }]
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: `0x${chainConfig.chainId.toString(16)}`,
+                            chainName: chainConfig.chainName,
+                            rpcUrls: [chainConfig.rpcUrl],
+                            nativeCurrency: chainConfig.nativeCurrency,
+                            blockExplorerUrls: [chainConfig.blockExplorer]
+                        }]
+                    });
+                } else {
+                    throw switchError;
+                }
+            }
+        }
+
+        async function initializeContracts() {
+            routerContract = new web3.eth.Contract(routerAbi, web3.utils.toChecksumAddress(routerAddress));
+            gdogContract = new web3.eth.Contract(erc20Abi, web3.utils.toChecksumAddress(gdogAddress));
+            pairContract = new web3.eth.Contract(pairAbi, web3.utils.toChecksumAddress(pairAddress));
+        }
+
+        async function checkBalances() {
+            if (!web3 || !account) {
+                document.getElementById('swapButton').disabled = true;
+                document.getElementById('gdogBalance').innerText = '余额: 0';
+                document.getElementById('gtBalance').innerText = '余额: 0';
+                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
+                return;
+            }
+            try {
+                const gdogBalance = await gdogContract.methods.balanceOf(account).call();
+                document.getElementById('gdogBalance').innerText = `余额: ${Number(web3.utils.fromWei(gdogBalance, 'ether')).toLocaleString()}`;
+                const gtBalance = await web3.eth.getBalance(account);
+                document.getElementById('gtBalance').innerText = `余额: ${Number(web3.utils.fromWei(gtBalance, 'ether')).toLocaleString()} GT`;
+                await updateGdogAmount();
+            } catch (error) {
+                document.getElementById('gdogBalance').innerText = '余额: 查询失败';
+                document.getElementById('gtBalance').innerText = '余额: 查询失败';
+                document.getElementById('swapButton').disabled = true;
+                document.getElementById('progressStatus').innerText = `错误: 余额查询失败 - ${error.message}`;
+            }
+        }
+
+        async function updateGdogAmount() {
+            const gtAmount = document.getElementById('gtAmount').value.trim();
+            const gdogAmountInput = document.getElementById('gdogAmount');
+            const swapButton = document.getElementById('swapButton');
+            if (!web3 || !gtAmount || isNaN(gtAmount) || gtAmount <= 0) {
+                gdogAmountInput.value = '';
+                swapButton.disabled = true;
+                return;
+            }
+            try {
+                const gtAmountWei = web3.utils.toWei(gtAmount, 'ether');
+                const path = [wgtAddress, gdogAddress];
+                const amounts = await routerContract.methods.getAmountsOut(gtAmountWei, path).call();
+                const gdogAmount = Number(web3.utils.fromWei(amounts[1], 'ether')).toFixed(6);
+                gdogAmountInput.value = gdogAmount;
+                swapButton.disabled = false;
+                document.getElementById('networkStatus').innerText = `预计获得: ${gdogAmount} GDOG`;
+            } catch (error) {
+                gdogAmountInput.value = '';
+                swapButton.disabled = true;
+                document.getElementById('networkStatus').innerText = '无法计算 GDOG 数量';
+                document.getElementById('progressStatus').innerText = `错误: 计算失败 - ${error.message}`;
+            }
+        }
+
+        async function swapETHForGDOG() {
+            const status = document.getElementById('networkStatus');
+            const swapButton = document.getElementById('swapButton');
+            const gtAmount = document.getElementById('gtAmount').value.trim();
+            const slippage = document.getElementById('slippage').value.trim();
+            const gdogAmount = document.getElementById('gdogAmount').value.trim();
+
+            if (!web3 || !account) {
+                status.innerText = '请连接钱包';
+                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
+                return;
+            }
+            if (!gtAmount || isNaN(gtAmount) || gtAmount <= 0 || !slippage || isNaN(slippage) || slippage < 0 || !gdogAmount || isNaN(gdogAmount) || gdogAmount <= 0) {
+                status.innerText = '请输入有效的 GT 数量或滑点';
+                document.getElementById('progressStatus').innerText = '错误: 无效的输入';
+                return;
+            }
+
+            swapButton.disabled = true;
+            swapButton.innerHTML = '购买中... <span class="spinner"></span>';
+            status.innerText = '执行购买 GDOG...';
+            document.getElementById('progressStatus').innerText = '购买 GDOG 中...';
+
+            const gtAmountWei = web3.utils.toWei(gtAmount, 'ether');
+            const gdogAmountWei = web3.utils.toWei(gdogAmount, 'ether');
+            const slippagePercent = parseFloat(slippage) / 100;
+            const gdogAmountMin = web3.utils.toBN(gdogAmountWei).mul(web3.utils.toBN(Math.floor((1 - slippagePercent) * 1000))).div(web3.utils.toBN(1000));
+            const path = [wgtAddress, gdogAddress];
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+
+            try {
+                const tx = await routerContract.methods.swapExactETHForTokens(
+                    gdogAmountMin,
+                    path,
+                    account,
+                    deadline
+                ).send({
+                    from: account,
+                    value: gtAmountWei,
+                    gas: 10000000
+                });
+                await waitForTransaction(tx.transactionHash);
+                status.innerText = '购买 GDOG 成功！';
+                document.getElementById('progressStatus').innerText = `成功: ${tx.transactionHash}`;
+                await checkBalances();
+            } catch (error) {
+                if (error.code === 4001) {
+                    status.innerText = '用户取消了交易';
+                    document.getElementById('progressStatus').innerText = '错误: 用户取消交易';
+                } else if (error.message.includes('insufficient funds for gas')) {
+                    status.innerText = 'GT 不足以支付 Gas 费用';
+                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
+                } else {
+                    status.innerText = `购买失败: ${error.message || '未知错误'}`;
+                    document.getElementById('progressStatus').innerText = `错误: ${error.message}`;
+                }
+            } finally {
+                swapButton.disabled = false;
+                swapButton.innerHTML = '购买 GDOG';
+            }
+        }
+
+        document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
+        document.getElementById('swapButton').addEventListener('click', swapETHForGDOG);
+        document.getElementById('gtAmount').addEventListener('input', updateGdogAmount);
+        document.getElementById('slippage').addEventListener('input', updateGdogAmount);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkBalances();
+        });
+    </script>
+</body>
+</html>
