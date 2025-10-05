@@ -1,205 +1,132 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>购买 Grabbit 代币</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="https://woofswap.finance/image/tokens/star.png" type="image/x-icon">
-    <style>
-        :root {
-            --primary-color: #ff9100;
-            --secondary-color: #ff6f61;
-            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
-            --card-bg: #2c2f48;
-            --input-bg: #373b5c;
-            --text-color: #ffffff;
-            --border-radius: 15px;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grabbit Swap</title>
+    <link rel="icon" type="image/png" href="https://woofswap.finance/image/tokens/star.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0068FF',
+                        secondary: '#18E5A0',
+                        accent: '#FFD700',
+                        dark: '#070808',
+                        'light-gray': '#E5E7EB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Changa One', 'system-ui', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        }
+                    }
+                }
+            }
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--gradient-bg);
-            color: var(--text-color);
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--card-bg);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border-radius: var(--border-radius);
-            padding: 20px;
-        }
-        .header {
-            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            padding: 12px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .connect-section button {
-            padding: 12px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
-            margin-bottom: 10px;
-        }
-        .connect-section button:hover { background: #e68a00; }
-        .input-box {
-            background: var(--input-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-        }
-        .input-box label {
-            display: block;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            background: var(--input-bg);
-            border: none;
-            border-radius: 10px;
-            color: var(--text-color);
-            font-size: 1em;
-        }
-        input[readonly] {
-            background: #2a2a3d;
-            cursor: not-allowed;
-        }
-        .balance-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            color: #ff9100;
-        }
-        .action-button {
-            padding: 15px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        .action-button:disabled {
-            background: #4a4f7a;
-            cursor: not-allowed;
-        }
-        .action-button:hover:not(:disabled) { background: #e68a00; }
-        .status {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--primary-color);
-            text-align: center;
-        }
-        .dog-section {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .dog-section img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
-        }
-        .dog-message {
-            font-size: 0.9em;
-            color: var(--secondary-color);
-            font-style: italic;
-        }
-        .progress {
-            margin-top: 10px;
-            padding: 10px;
-            background: var(--input-bg);
-            border-radius: var(--border-radius);
-            color: var(--text-color);
-            font-size: 0.8em;
-        }
-        .progress-item {
-            margin: 5px 0;
-        }
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #fff;
-            border-top: 2px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 5px;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .container { padding: 15px; }
-            .header { font-size: 1.1em; }
-            .dog-section img { width: 50px; height: 50px; }
-            .dog-message { font-size: 0.8em; }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow-glow {
+                text-shadow: 0 0 10px rgba(0, 104, 255, 0.5);
+            }
+            .glow-border {
+                box-shadow: 0 0 12px rgba(24, 229, 160, 0.3);
+            }
+            .bg-grid {
+                background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Ccircle cx="1" cy="1" r="1" fill="%230068FF" fill-opacity="0.1"/%3E%3C/svg%3E');
+                background-size: 20px 20px;
+            }
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Changa+One&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <div class="header">购买 Grabbit 代币</div>
-        <div class="connect-section">
-            <button id="connectWalletButton">连接钱包</button>
-            <div id="networkStatus" class="status">点击连接钱包...</div>
+<body class="bg-dark text-white font-sans overflow-x-hidden">
+    <header class="fixed w-full z-50 bg-dark/90 backdrop-blur-md transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer hover:text-primary transition-colors">
+                <div class="w-10 h-10 rounded-full overflow-hidden">
+                    <img src="https://woofswap.finance/image/tokens/star.png" alt="Grabbit Logo" class="w-full h-full object-cover">
+                </div>
+                <span class="font-display text-3xl text-primary text-shadow-glow">Grabbit Swap</span>
+            </div>
+            <button id="menuToggle" class="md:hidden text-2xl text-primary">
+                <i class="fa fa-bars"></i>
+            </button>
         </div>
-        <div class="input-box">
-            <label>GT 数量</label>
-            <input type="text" id="gtAmount" placeholder="输入 GT 数量">
-            <div class="balance-row"><span>GT 余额</span><span id="gtBalance">余额: 0</span></div>
-            <label>Grabbit 数量</label>
-            <input type="text" id="GrabbitAmount" placeholder="自动计算" readonly>
-            <div class="balance-row"><span>Grabbit 余额</span><span id="GrabbitBalance">余额: 0</span></div>
-            <label>滑点容忍度（%）</label>
-            <input type="text" id="slippage" placeholder="输入滑点容忍度（如 5）" value="5">
-            <button class="action-button" id="buyButton" disabled>购买 Grabbit</button>
+        <div id="mobileMenu" class="md:hidden bg-dark/95 absolute w-full top-full py-4 px-4 hidden">
+            <div class="flex flex-col space-y-4">
+                <a href="#swap" class="hover:text-primary transition-colors py-2 text-white">Swap Grabbit</a>
+            </div>
         </div>
-        <div class="dog-section">
-            <img src="https://woofswap.finance/image/tokens/star.png" alt="WSTAR">
-            <div class="dog-message" id="dogMessage">"Woof! 连接钱包以购买 Grabbit！"</div>
+    </header>
+
+    <section id="swap" class="min-h-screen pt-24 pb-16 bg-grid relative overflow-hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-dark pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="w-48 h-48 mx-auto mb-8 animate-float">
+                <img src="https://woofswap.finance/image/tokens/star.png" alt="Grabbit Logo" class="w-full h-full object-cover rounded-full border-4 border-secondary/50 glow-border">
+            </div>
+            <h1 class="font-display text-5xl md:text-7xl mb-6 text-primary text-shadow-glow">Swap Grabbit on GateSwap</h1>
+            <p class="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto mb-10">
+                Buy or sell $Grabbit with GateSwap.
+            </p>
+            <div class="bg-dark/50 p-6 rounded-lg border border-primary/30 max-w-md mx-auto mb-8">
+                <div class="flex flex-col space-y-4">
+                    <div class="flex justify-center gap-4">
+                        <button id="buyModeButton" class="px-6 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/80 transition-all">Buy Grabbit</button>
+                        <button id="sellModeButton" class="px-6 py-2 bg-dark/80 border border-secondary text-secondary rounded-full font-medium hover:bg-secondary/10 transition-all">Sell Grabbit</button>
+                    </div>
+                    <button id="connectWalletButton" class="px-6 py-3 bg-primary text-white rounded-full font-medium hover:bg-primary/80 transition-all">Connect Wallet</button>
+                    <p id="networkStatus" class="text-light-gray text-sm">Click to connect wallet...</p>
+                    <div class="flex items-center bg-dark/80 p-3 rounded-lg border border-primary/20">
+                        <i class="fa fa-link text-accent mr-3"></i>
+                        <span class="font-mono text-sm text-white truncate">0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0</span>
+                        <button class="ml-3 text-light-gray hover:text-secondary transition-colors" onclick="copyContract()">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                    <p id="balanceStatus" class="text-light-gray text-sm">GT Balance: 0 | Grabbit Balance: 0</p>
+                    <button id="approveButton" class="px-6 py-3 bg-secondary text-dark rounded-full font-medium hover:bg-secondary/80 transition-all hidden">Approve Grabbit</button>
+                    <div id="amountInput">
+                        <label id="amountLabel" class="block text-left text-light-gray mb-2">Total GT Amount</label>
+                        <input id="amount" type="text" placeholder="Enter total GT amount" class="w-full px-4 py-2 bg-dark/80 border border-primary/20 rounded-lg text-white focus:outline-none focus:border-secondary">
+                    </div>
+                    <div>
+                        <label class="block text-left text-light-gray mb-2">Slippage Tolerance (%)</label>
+                        <input id="slippage" type="text" placeholder="Enter slippage (e.g., 5)" value="5" class="w-full px-4 py-2 bg-dark/80 border border-primary/20 rounded-lg text-white focus:outline-none focus:border-secondary">
+                    </div>
+                    <button id="swapButton" class="px-6 py-3 bg-primary text-white rounded-full font-medium hover:bg-primary/80 transition-all disabled:bg-dark/50 disabled:cursor-not-allowed" disabled>Buy Grabbit</button>
+                    <p id="progressStatus" class="text-light-gray text-sm">Waiting for action...</p>
+                </div>
+            </div>
         </div>
-        <div class="progress" id="progressLog">
-            <div class="progress-item" id="progressStatus">等待操作...</div>
+    </section>
+
+    <footer class="bg-dark/95 py-12 border-t border-primary/20">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-light-gray text-sm">© 2025 Grabbit. All rights reserved. DYOR and invest responsibly.</p>
         </div>
-    </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
-        const routerAddress = '0x12814690F59a9CE8bA87dC8cF0692442bAa9C097';
-        const GrabbitAddress = '0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0';
-        const wgtAddress = '0x6803b8E93b13941F6B73b82E324B80251B3dE338';
-        const pairAddress = '0x691676510864d0f2f46e93aC9b0476702AfCC076';
+        const GATE_ROUTER = '0x12814690F59a9CE8bA87dC8cF0692442bAa9C097';
+        const GRABBIT = '0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0';
+        const WGT = '0x6803b8E93b13941F6B73b82E324B80251B3dE338';
+        const GATE_PAIR = '0x691676510864d0f2f46e93aC9b0476702AfCC076';
 
         const routerAbi = [
             {
@@ -213,6 +140,19 @@
                 "outputs": [],
                 "stateMutability": "payable",
                 "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+                    { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" },
+                    { "internalType": "address[]", "name": "path", "type": "address[]" },
+                    { "internalType": "address", "name": "to", "type": "address" },
+                    { "internalType": "uint256", "name": "deadline", "type": "uint256" }
+                ],
+                "name": "swapExactTokensForETHSupportingFeeOnTransferTokens",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
             }
         ];
 
@@ -222,33 +162,35 @@
                 "inputs": [{ "name": "_owner", "type": "address" }],
                 "name": "balanceOf",
                 "outputs": [{ "name": "balance", "type": "uint256" }],
-                "type": "function"
-            }
-        ];
-
-        const pairAbi = [
-            {
-                "inputs": [],
-                "name": "getReserves",
-                "outputs": [
-                    { "internalType": "uint112", "name": "_reserve0", "type": "uint112" },
-                    { "internalType": "uint112", "name": "_reserve1", "type": "uint112" },
-                    { "internalType": "uint32", "name": "_blockTimestampLast", "type": "uint32" }
-                ],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
-                "inputs": [],
-                "name": "token0",
-                "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+                "constant": false,
+                "inputs": [
+                    { "name": "_spender", "type": "address" },
+                    { "name": "_value", "type": "uint256" }
+                ],
+                "name": "approve",
+                "outputs": [{ "name": "success", "type": "bool" }],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    { "name": "_owner", "type": "address" },
+                    { "name": "_spender", "type": "address" }
+                ],
+                "name": "allowance",
+                "outputs": [{ "name": "remaining", "type": "uint256" }],
                 "stateMutability": "view",
                 "type": "function"
             }
         ];
 
         const chains = {
-            RufusChain: {
+            GateLayer: {
                 chainId: 10088,
                 chainName: 'Gate Layer',
                 rpcUrl: 'https://gatelayer-rpc.gatenode.cc',
@@ -258,15 +200,22 @@
         };
 
         const dogMessages = {
-            connectSuccess: ["Woof! 钱包已连接，准备购买 Grabbit！", "Arf! 连接成功，开始吧！", "Bark! 钱包就位，行动起来！"],
-            connectFail: ["Woof! 钱包连接失败，请重试！", "Arf! 无法连接钱包，再试一次！", "Bark! 连接出错，检查钱包！"],
-            buyStart: ["Woof! 正在购买 Grabbit，稍等！", "Arf! 购买进行中！", "Bark! 正在获取 Grabbit！"],
-            buySuccess: ["Woof! 成功购买 Grabbit！", "Arf! Grabbit 到手啦！", "Bark! 购买成功！"],
-            buyFail: ["Woof! 购买失败，检查输入！", "Arf! 出了点问题，请重试！", "Bark! 购买 Grabbit 失败！"],
-            invalidInput: ["Woof! 输入的 GT 数量或滑点无效！", "Arf! 输入有误，检查一下！", "Bark! 请检查 GT 数量和滑点！"],
-            userDenied: ["Woof! 你取消了交易！", "Arf! 交易被取消，重新试试？", "Bark! 你拒绝了交易！"],
-            insufficientBalance: ["Woof! GT 余额不足！", "Arf! 余额不够，补充点吧！", "Bark! 需要更多 GT！"],
-            insufficientGas: ["Woof! GT 不足以支付 Gas 费用！", "Arf! Gas 费用不够，补充 GT！", "Bark! 需要更多 GT 用于 Gas！"]
+            connectSuccess: ["Woof! Wallet connected, ready to swap Grabbit!", "Arf! Connected, let's go!"],
+            connectFail: ["Woof! Wallet connection failed, try again!", "Arf! Can't connect wallet!"],
+            approveStart: ["Woof! Approving Grabbit, hold on!", "Arf! Authorizing Grabbit!"],
+            approveSuccess: ["Woof! Grabbit approved, ready to sell!", "Arf! Approval done!"],
+            approveFail: ["Woof! Approval failed, try again!", "Arf! Approval error!"],
+            buyStart: ["Woof! Buying Grabbit, wait a sec!", "Arf! Getting Grabbit!"],
+            buySuccess: ["Woof! Successfully bought Grabbit!", "Arf! Grabbit acquired!"],
+            buyFail: ["Woof! Buy failed, check inputs!", "Arf! Something went wrong!"],
+            sellStart: ["Woof! Selling Grabbit, hold on!", "Arf! Selling Grabbit now!"],
+            sellSuccess: ["Woof! Successfully sold Grabbit!", "Arf! Sale complete!"],
+            sellFail: ["Woof! Sell failed, check inputs!", "Arf! Sale error!"],
+            invalidInput: ["Woof! Invalid amount or slippage!", "Arf! Check your inputs!"],
+            userDenied: ["Woof! Transaction cancelled!", "Arf! You rejected the transaction!"],
+            insufficientBalance: ["Woof! Not enough GT or Grabbit!", "Arf! Need more funds!"],
+            insufficientGas: ["Woof! Not enough GT for gas!", "Arf! Gas funds low!"],
+            insufficientAllowance: ["Woof! Grabbit not approved, approve first!", "Arf! Need Grabbit approval!"]
         };
 
         function getRandomMessage(type) {
@@ -274,46 +223,8 @@
             return messages[Math.floor(Math.random() * messages.length)];
         }
 
-        let web3, account, routerContract, GrabbitContract, pairContract;
-
-        async function waitForTransaction(txHash, maxAttempts = 30) {
-            let attempts = 0;
-            document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
-            while (attempts < maxAttempts) {
-                const receipt = await web3.eth.getTransactionReceipt(txHash).catch(() => null);
-                if (receipt) {
-                    if (receipt.status) {
-                        document.getElementById('progressStatus').innerText = `交易成功: ${txHash}, Gas 使用: ${receipt.gasUsed}`;
-                        return receipt;
-                    }
-                    throw new Error(`交易 ${txHash} 失败, Revert Reason: ${await getRevertReason(txHash)}`);
-                }
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                attempts++;
-                document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
-            }
-            throw new Error(`交易 ${txHash} 未在 ${maxAttempts} 次尝试后确认`);
-        }
-
-        async function getRevertReason(txHash) {
-            const tx = await web3.eth.getTransaction(txHash);
-            const receipt = await web3.eth.getTransactionReceipt(txHash);
-            if (receipt && !receipt.status) {
-                try {
-                    const reason = await web3.eth.call({
-                        to: tx.to,
-                        from: tx.from,
-                        data: tx.input,
-                        gas: tx.gas,
-                        value: tx.value
-                    }, receipt.blockNumber - 1);
-                    return web3.utils.hexToUtf8(reason).replace(/\0/g, '') || 'Unknown';
-                } catch (e) {
-                    return 'Unknown';
-                }
-            }
-            return 'Unknown';
-        }
+        let web3, account, routerContract, grabbitContract;
+        let isBuyMode = true;
 
         async function initializeWeb3() {
             if (window.ethereum) {
@@ -321,23 +232,19 @@
                 try {
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     account = (await web3.eth.getAccounts())[0];
-                    document.getElementById('connectWalletButton').innerText = `已连接: ${account.slice(0, 6)}...${account.slice(-4)}`;
-                    await switchNetwork('RufusChain');
+                    document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                    await switchNetwork('GateLayer');
                     await initializeContracts();
                     await checkBalances();
-                    document.getElementById('networkStatus').innerText = `已连接到 Gate Layer`;
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
-                    document.getElementById('progressStatus').innerText = '钱包连接成功，准备操作';
+                    document.getElementById('networkStatus').innerText = 'Connected to Gate Layer';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('connectSuccess');
                 } catch (error) {
-                    console.error("连接错误:", error);
-                    document.getElementById('networkStatus').innerText = '钱包连接失败';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
-                    document.getElementById('progressStatus').innerText = `错误: 连接失败 - ${error.message}`;
+                    document.getElementById('networkStatus').innerText = 'Wallet connection failed';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('connectFail');
                 }
             } else {
-                document.getElementById('networkStatus').innerText = '请安装 MetaMask';
-                document.getElementById('dogMessage').innerText = 'Woof! 未找到 MetaMask！';
-                document.getElementById('progressStatus').innerText = '错误: 未检测到 MetaMask';
+                document.getElementById('networkStatus').innerText = 'Please install MetaMask';
+                document.getElementById('progressStatus').innerText = 'Error: MetaMask not detected';
             }
         }
 
@@ -367,231 +274,299 @@
         }
 
         async function initializeContracts() {
-            try {
-                routerContract = new web3.eth.Contract(routerAbi, web3.utils.toChecksumAddress(routerAddress));
-                GrabbitContract = new web3.eth.Contract(erc20Abi, web3.utils.toChecksumAddress(GrabbitAddress));
-                pairContract = new web3.eth.Contract(pairAbi, web3.utils.toChecksumAddress(pairAddress));
-            } catch (error) {
-                console.error("合约初始化错误:", error);
-                document.getElementById('networkStatus').innerText = '合约初始化失败';
-                document.getElementById('dogMessage').innerText = 'Woof! 合约设置失败！';
-                document.getElementById('progressStatus').innerText = `错误: 合约初始化失败 - ${error.message}`;
-            }
+            routerContract = new web3.eth.Contract(routerAbi, GATE_ROUTER);
+            grabbitContract = new web3.eth.Contract(erc20Abi, GRABBIT);
         }
 
         async function checkBalances() {
             if (!web3 || !account) {
-                document.getElementById('buyButton').disabled = true;
-                document.getElementById('GrabbitBalance').innerText = '余额: 0';
-                document.getElementById('gtBalance').innerText = '余额: 0';
-                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
+                document.getElementById('swapButton').disabled = true;
+                document.getElementById('approveButton').classList.add('hidden');
+                document.getElementById('balanceStatus').innerText = 'GT Balance: 0 | Grabbit Balance: 0';
                 return;
             }
             try {
-                const GrabbitBalance = await GrabbitContract.methods.balanceOf(account).call();
-                document.getElementById('GrabbitBalance').innerText = `余额: ${Number(GrabbitBalance / 10).toLocaleString()}`; // Grabbit 小数点位数为 1
                 const gtBalance = await web3.eth.getBalance(account);
-                document.getElementById('gtBalance').innerText = `余额: ${Number(web3.utils.fromWei(gtBalance, 'ether')).toLocaleString()} GT`;
-                await checkInputStatus();
+                const grabbitBalance = await grabbitContract.methods.balanceOf(account).call();
+                const gtBalanceFormatted = Number(web3.utils.fromWei(gtBalance, 'ether')).toFixed(4);
+                const grabbitBalanceFormatted = Number(grabbitBalance / 10).toFixed(1); // Grabbit: 1 decimal
+                document.getElementById('balanceStatus').innerText = `GT Balance: ${gtBalanceFormatted} | Grabbit Balance: ${grabbitBalanceFormatted}`;
+                await checkAllowance();
             } catch (error) {
-                console.error("余额查询错误:", error);
-                document.getElementById('GrabbitBalance').innerText = '余额: 查询失败';
-                document.getElementById('gtBalance').innerText = '余额: 查询失败';
-                document.getElementById('buyButton').disabled = true;
-                document.getElementById('progressStatus').innerText = `错误: 余额查询失败 - ${error.message}`;
+                document.getElementById('balanceStatus').innerText = 'Balance check failed';
+                document.getElementById('progressStatus').innerText = `Error: Balance check failed - ${error.message}`;
+                document.getElementById('swapButton').disabled = true;
             }
         }
 
-        async function calculateGrabbitAmount(gtAmount) {
-            const GrabbitAmountInput = document.getElementById('GrabbitAmount');
-            if (!web3 || !pairContract || !gtAmount || isNaN(gtAmount) || gtAmount <= 0) {
-                GrabbitAmountInput.value = '';
-                return;
-            }
-            try {
-                const reserves = await pairContract.methods.getReserves().call({ timeout: 10000 });
-                const token0 = await pairContract.methods.token0().call({ timeout: 10000 });
-                const gtAmountWei = web3.utils.toWei(gtAmount.toString(), 'ether');
-                let GrabbitAmountWei;
-
-                const isGrabbitToken0 = token0.toLowerCase() === GrabbitAddress.toLowerCase();
-                const reserveGrabbit = isGrabbitToken0 ? reserves[0] : reserves[1];
-                const reserveWgt = isGrabbitToken0 ? reserves[1] : reserves[0];
-
-                if (web3.utils.toBN(reserveGrabbit).isZero() || web3.utils.toBN(reserveWgt).isZero()) {
-                    document.getElementById('networkStatus').innerText = '池子未初始化，无法计算 Grabbit 数量';
-                    GrabbitAmountInput.value = '0';
-                    return;
+        async function checkAllowance() {
+            if (!isBuyMode) {
+                try {
+                    const amount = document.getElementById('amount').value.trim();
+                    if (!amount || isNaN(amount) || amount <= 0) {
+                        document.getElementById('approveButton').classList.add('hidden');
+                        document.getElementById('swapButton').disabled = true;
+                        return;
+                    }
+                    const amountWei = web3.utils.toBN(amount * 10); // Grabbit: 1 decimal
+                    const allowance = await grabbitContract.methods.allowance(account, GATE_ROUTER).call();
+                    if (web3.utils.toBN(allowance).lt(amountWei)) {
+                        document.getElementById('approveButton').classList.remove('hidden');
+                        document.getElementById('swapButton').disabled = true;
+                    } else {
+                        document.getElementById('approveButton').classList.add('hidden');
+                        document.getElementById('swapButton').disabled = false;
+                    }
+                } catch (error) {
+                    document.getElementById('progressStatus').innerText = getRandomMessage('approveFail');
+                    document.getElementById('swapButton').disabled = true;
                 }
-
-                GrabbitAmountWei = web3.utils.toBN(gtAmountWei)
-                    .mul(web3.utils.toBN(reserveGrabbit))
-                    .div(web3.utils.toBN(reserveWgt));
-                const GrabbitAmount = Number(GrabbitAmountWei / 10).toFixed(1); // Grabbit 小数点位数为 1
-                GrabbitAmountInput.value = GrabbitAmount;
-                document.getElementById('networkStatus').innerText = `预计获得 Grabbit: ${GrabbitAmount}`;
-                document.getElementById('progressStatus').innerText = `计算 Grabbit 成功: ${GrabbitAmount}`;
-            } catch (error) {
-                console.error("计算 Grabbit 数量错误:", error);
-                document.getElementById('networkStatus').innerText = '无法计算 Grabbit 数量';
-                GrabbitAmountInput.value = '0';
-                document.getElementById('progressStatus').innerText = `错误: 计算 Grabbit 失败 - ${error.message}`;
+            } else {
+                document.getElementById('approveButton').classList.add('hidden');
+                document.getElementById('swapButton').disabled = document.getElementById('amount').value.trim() === '' || isNaN(document.getElementById('amount').value) || document.getElementById('amount').value <= 0;
             }
         }
 
-        async function checkInputStatus() {
-            if (!web3 || !account) {
-                document.getElementById('buyButton').disabled = true;
-                return;
-            }
-            const gtAmount = document.getElementById('gtAmount').value.trim();
-            if (!gtAmount || isNaN(gtAmount) || gtAmount <= 0) {
-                document.getElementById('buyButton').disabled = true;
-                document.getElementById('GrabbitAmount').value = '';
+        async function approveGrabbit() {
+            const amount = document.getElementById('amount').value.trim();
+            if (!amount || isNaN(amount) || amount <= 0) {
+                document.getElementById('progressStatus').innerText = getRandomMessage('invalidInput');
                 return;
             }
             try {
-                document.getElementById('buyButton').disabled = false;
-                await calculateGrabbitAmount(gtAmount);
-            } catch (error) {
-                console.error("输入检查错误:", error);
-                document.getElementById('networkStatus').innerText = "检查输入状态失败";
-                document.getElementById('dogMessage').innerText = getRandomMessage('invalidInput');
-                document.getElementById('progressStatus').innerText = `错误: 输入检查失败 - ${error.message}`;
-            }
-        }
-
-        async function buyGrabbit() {
-            const status = document.getElementById('networkStatus');
-            const buyButton = document.getElementById('buyButton');
-            const dogMessage = document.getElementById('dogMessage');
-            const gtAmount = document.getElementById('gtAmount').value.trim();
-            const slippage = document.getElementById('slippage').value.trim();
-
-            if (!web3 || !account) {
-                status.innerText = "请连接钱包";
-                dogMessage.innerText = getRandomMessage('connectFail');
-                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
-                return;
-            }
-            if (!gtAmount || isNaN(gtAmount) || gtAmount <= 0 || !slippage || isNaN(slippage) || slippage < 0) {
-                status.innerText = "请输入有效的 GT 数量或滑点";
-                dogMessage.innerText = getRandomMessage('invalidInput');
-                document.getElementById('progressStatus').innerText = '错误: 无效的输入';
-                return;
-            }
-
-            buyButton.disabled = true;
-            buyButton.innerHTML = '购买中... <span class="spinner"></span>';
-            status.innerText = "执行购买 Grabbit...";
-            dogMessage.innerText = getRandomMessage('buyStart');
-            document.getElementById('progressStatus').innerText = '购买 Grabbit 中...';
-
-            try {
-                const gtAmountWei = web3.utils.toWei(gtAmount, 'ether');
-                const slippagePercent = parseFloat(slippage) / 100;
-
-                const reserves = await pairContract.methods.getReserves().call();
-                const token0 = await pairContract.methods.token0().call();
-                const isGrabbitToken0 = token0.toLowerCase() === GrabbitAddress.toLowerCase();
-                const reserveGrabbit = isGrabbitToken0 ? reserves[0] : reserves[1];
-                const reserveWgt = isGrabbitToken0 ? reserves[1] : reserves[0];
-
-                if (web3.utils.toBN(reserveGrabbit).isZero() || web3.utils.toBN(reserveWgt).isZero()) {
-                    status.innerText = "池子未初始化，无法购买";
-                    dogMessage.innerText = getRandomMessage('buyFail');
-                    document.getElementById('progressStatus').innerText = '错误: 池子未初始化';
-                    return;
-                }
-
-                let GrabbitAmountWei = web3.utils.toBN(gtAmountWei)
-                    .mul(web3.utils.toBN(reserveGrabbit))
-                    .div(web3.utils.toBN(reserveWgt));
-                const GrabbitAmountMin = web3.utils.toBN(GrabbitAmountWei)
-                    .mul(web3.utils.toBN(Math.floor((1 - slippagePercent) * 1000)))
-                    .div(web3.utils.toBN(1000));
-
-                const gtBalance = await web3.eth.getBalance(account);
-                if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei))) {
-                    status.innerText = "GT 余额不足";
-                    dogMessage.innerText = getRandomMessage('insufficientBalance');
-                    document.getElementById('progressStatus').innerText = '错误: GT 余额不足';
-                    return;
-                }
-
+                document.getElementById('approveButton').innerHTML = 'Approving... <i class="fa fa-spinner fa-spin ml-2"></i>';
+                document.getElementById('progressStatus').innerText = getRandomMessage('approveStart');
+                const amountWei = web3.utils.toBN(amount * 10); // Grabbit: 1 decimal
                 const gasPrice = await web3.eth.getGasPrice();
-                const path = [wgtAddress, GrabbitAddress];
-                const estimatedGas = await routerContract.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-                    GrabbitAmountMin,
-                    path,
-                    account,
-                    Math.floor(Date.now() / 1000) + 60 * 20
-                ).estimateGas({ from: account, value: gtAmountWei });
-                const gasCost = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(estimatedGas));
-                if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei).add(gasCost))) {
-                    status.innerText = "GT 不足以支付 Gas 费用";
-                    dogMessage.innerText = getRandomMessage('insufficientGas');
-                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
-                    return;
-                }
-
-                console.log({
-                    gtAmountWei: web3.utils.fromWei(gtAmountWei, 'ether'),
-                    GrabbitAmountMin: (GrabbitAmountMin / 10).toString(), // Grabbit 小数点位数为 1
-                    path,
-                    deadline: Math.floor(Date.now() / 1000) + 60 * 20
-                });
-
-                const tx = await routerContract.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-                    GrabbitAmountMin,
-                    path,
-                    account,
-                    Math.floor(Date.now() / 1000) + 60 * 20
-                ).send({
+                const estimatedGas = await grabbitContract.methods.approve(GATE_ROUTER, amountWei).estimateGas({ from: account });
+                const tx = await grabbitContract.methods.approve(GATE_ROUTER, amountWei).send({
                     from: account,
-                    value: gtAmountWei,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 3000000)),
+                    gas: Math.min(estimatedGas * 2, 1000000),
                     gasPrice
                 });
-                document.getElementById('progressStatus').innerText = `交易提交: ${tx.transactionHash}`;
-                await waitForTransaction(tx.transactionHash);
-                status.innerText = "成功购买 Grabbit！";
-                dogMessage.innerText = getRandomMessage('buySuccess');
-                document.getElementById('progressStatus').innerText = `成功: ${tx.transactionHash}, Gas 使用: ${tx.gasUsed}`;
-                await checkBalances();
+                document.getElementById('progressStatus').innerText = `Approval successful: ${tx.transactionHash}`;
+                document.getElementById('networkStatus').innerText = 'Grabbit approved';
+                await checkAllowance();
             } catch (error) {
-                console.error("购买 Grabbit 错误:", error);
+                document.getElementById('progressStatus').innerText = getRandomMessage('approveFail');
                 if (error.code === 4001) {
-                    status.innerText = "用户取消了交易";
-                    dogMessage.innerText = getRandomMessage('userDenied');
-                    document.getElementById('progressStatus').innerText = '错误: 用户取消交易';
-                } else if (error.message.includes('insufficient funds for gas')) {
-                    status.innerText = "GT 不足以支付 Gas 费用";
-                    dogMessage.innerText = getRandomMessage('insufficientGas');
-                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
-                } else if (error.message.includes('UniswapV2: INSUFFICIENT_OUTPUT_AMOUNT')) {
-                    status.innerText = "滑点不足，请增加滑点容忍度";
-                    dogMessage.innerText = getRandomMessage('buyFail');
-                    document.getElementById('progressStatus').innerText = '错误: 滑点不足';
+                    document.getElementById('networkStatus').innerText = 'Transaction cancelled';
+                } else if (error.message.includes('insufficient funds')) {
+                    document.getElementById('networkStatus').innerText = 'Not enough GT for gas';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('insufficientGas');
                 } else {
-                    status.innerText = `购买失败: ${error.message || "未知错误"}`;
-                    dogMessage.innerText = getRandomMessage('buyFail');
-                    document.getElementById('progressStatus').innerText = `错误: ${error.message}`;
+                    document.getElementById('networkStatus').innerText = 'Approval failed';
                 }
             } finally {
-                buyButton.disabled = false;
-                buyButton.innerHTML = '购买 Grabbit';
+                document.getElementById('approveButton').innerHTML = 'Approve Grabbit';
             }
+        }
+
+        async function swapGrabbit() {
+            const amount = document.getElementById('amount').value.trim();
+            const slippage = document.getElementById('slippage').value.trim();
+            const status = document.getElementById('networkStatus');
+            const swapButton = document.getElementById('swapButton');
+
+            if (!web3 || !account) {
+                status.innerText = 'Please connect wallet';
+                document.getElementById('progressStatus').innerText = getRandomMessage('connectFail');
+                return;
+            }
+            if (!amount || isNaN(amount) || amount <= 0 || !slippage || isNaN(slippage) || slippage < 0) {
+                status.innerText = `Invalid ${isBuyMode ? 'GT' : 'Grabbit'} amount or slippage`;
+                document.getElementById('progressStatus').innerText = getRandomMessage('invalidInput');
+                return;
+            }
+
+            swapButton.disabled = true;
+            swapButton.innerHTML = `${isBuyMode ? 'Buying' : 'Selling'}... <i class="fa fa-spinner fa-spin ml-2"></i>`;
+            status.innerText = `Executing ${isBuyMode ? 'buy' : 'sell'}...`;
+            document.getElementById('progressStatus').innerText = getRandomMessage(isBuyMode ? 'buyStart' : 'sellStart');
+
+            try {
+                const gasPrice = await web3.eth.getGasPrice();
+                const slippagePercent = parseFloat(slippage) / 100;
+                const path = isBuyMode ? [WGT, GRABBIT] : [GRABBIT, WGT];
+                let estimatedGas, tx;
+
+                if (isBuyMode) {
+                    const gtAmountWei = web3.utils.toWei(amount, 'ether');
+                    const amountOutMin = '0'; // No output calculation, set to 0 for safety
+                    const gtBalance = await web3.eth.getBalance(account);
+                    if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei))) {
+                        status.innerText = 'Insufficient GT balance';
+                        document.getElementById('progressStatus').innerText = getRandomMessage('insufficientBalance');
+                        return;
+                    }
+                    estimatedGas = await routerContract.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+                        amountOutMin,
+                        path,
+                        account,
+                        Math.floor(Date.now() / 1000) + 60 * 20
+                    ).estimateGas({ from: account, value: gtAmountWei });
+                    const gasCost = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(estimatedGas));
+                    if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei).add(gasCost))) {
+                        status.innerText = 'Not enough GT for gas';
+                        document.getElementById('progressStatus').innerText = getRandomMessage('insufficientGas');
+                        return;
+                    }
+                    tx = await routerContract.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+                        amountOutMin,
+                        path,
+                        account,
+                        Math.floor(Date.now() / 1000) + 60 * 20
+                    ).send({
+                        from: account,
+                        value: gtAmountWei,
+                        gas: Math.min(estimatedGas * 2, 3000000),
+                        gasPrice
+                    });
+                    status.innerText = 'Buy successful!';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('buySuccess') + ` ${tx.transactionHash}`;
+                } else {
+                    const grabbitAmountWei = web3.utils.toBN(amount * 10); // Grabbit: 1 decimal
+                    const amountOutMin = '0'; // No output calculation
+                    const grabbitBalance = await grabbitContract.methods.balanceOf(account).call();
+                    if (web3.utils.toBN(grabbitBalance).lt(grabbitAmountWei)) {
+                        status.innerText = 'Insufficient Grabbit balance';
+                        document.getElementById('progressStatus').innerText = getRandomMessage('insufficientBalance');
+                        return;
+                    }
+                    const allowance = await grabbitContract.methods.allowance(account, GATE_ROUTER).call();
+                    if (web3.utils.toBN(allowance).lt(grabbitAmountWei)) {
+                        status.innerText = 'Please approve Grabbit';
+                        document.getElementById('progressStatus').innerText = getRandomMessage('insufficientAllowance');
+                        return;
+                    }
+                    estimatedGas = await routerContract.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                        grabbitAmountWei,
+                        amountOutMin,
+                        path,
+                        account,
+                        Math.floor(Date.now() / 1000) + 60 * 20
+                    ).estimateGas({ from: account });
+                    const gasCost = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(estimatedGas));
+                    const gtBalance = await web3.eth.getBalance(account);
+                    if (web3.utils.toBN(gtBalance).lt(gasCost)) {
+                        status.innerText = 'Not enough GT for gas';
+                        document.getElementById('progressStatus').innerText = getRandomMessage('insufficientGas');
+                        return;
+                    }
+                    tx = await routerContract.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                        grabbitAmountWei,
+                        amountOutMin,
+                        path,
+                        account,
+                        Math.floor(Date.now() / 1000) + 60 * 20
+                    ).send({
+                        from: account,
+                        gas: Math.min(estimatedGas * 2, 3000000),
+                        gasPrice
+                    });
+                    status.innerText = 'Sell successful!';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('sellSuccess') + ` ${tx.transactionHash}`;
+                }
+                await checkBalances();
+            } catch (error) {
+                if (error.code === 4001) {
+                    status.innerText = 'Transaction cancelled';
+                    document.getElementById('progressStatus').innerText = getRandomMessage('userDenied');
+                } else if (error.message.includes('insufficient funds')) {
+                    status.innerText = `Insufficient ${isBuyMode ? 'GT' : 'Grabbit'} balance`;
+                    document.getElementById('progressStatus').innerText = getRandomMessage('insufficientBalance');
+                } else if (error.message.includes('INSUFFICIENT_OUTPUT_AMOUNT')) {
+                    status.innerText = 'Slippage too low';
+                    document.getElementById('progressStatus').innerText = getRandomMessage(isBuyMode ? 'buyFail' : 'sellFail');
+                } else {
+                    status.innerText = `${isBuyMode ? 'Buy' : 'Sell'} failed`;
+                    document.getElementById('progressStatus').innerText = getRandomMessage(isBuyMode ? 'buyFail' : 'sellFail') + ` ${error.message}`;
+                }
+            } finally {
+                swapButton.disabled = false;
+                swapButton.innerHTML = isBuyMode ? 'Buy Grabbit' : 'Sell Grabbit';
+            }
+        }
+
+        function copyContract() {
+            const contract = '0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0';
+            navigator.clipboard.writeText(contract).then(() => {
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                notification.textContent = 'Contract address copied!';
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.3s';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 2000);
+            });
         }
 
         document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
-        document.getElementById('buyButton').addEventListener('click', buyGrabbit);
-        document.getElementById('gtAmount').addEventListener('input', checkInputStatus);
-        document.getElementById('slippage').addEventListener('input', checkInputStatus);
+        document.getElementById('swapButton').addEventListener('click', swapGrabbit);
+        document.getElementById('approveButton').addEventListener('click', approveGrabbit);
+        document.getElementById('amount').addEventListener('input', checkAllowance);
+        document.getElementById('slippage').addEventListener('input', checkAllowance);
+
+        document.getElementById('buyModeButton').addEventListener('click', () => {
+            isBuyMode = true;
+            document.getElementById('buyModeButton').classList.add('bg-primary', 'text-white');
+            document.getElementById('buyModeButton').classList.remove('bg-dark/80', 'border', 'border-secondary', 'text-secondary');
+            document.getElementById('sellModeButton').classList.remove('bg-primary', 'text-white');
+            document.getElementById('sellModeButton').classList.add('bg-dark/80', 'border', 'border-secondary', 'text-secondary');
+            document.getElementById('amountLabel').innerText = 'Total GT Amount';
+            document.getElementById('amount').placeholder = 'Enter total GT amount';
+            document.getElementById('swapButton').innerText = 'Buy Grabbit';
+            checkAllowance();
+        });
+
+        document.getElementById('sellModeButton').addEventListener('click', () => {
+            isBuyMode = false;
+            document.getElementById('sellModeButton').classList.add('bg-primary', 'text-white');
+            document.getElementById('sellModeButton').classList.remove('bg-dark/80', 'border', 'border-secondary', 'text-secondary');
+            document.getElementById('buyModeButton').classList.remove('bg-primary', 'text-white');
+            document.getElementById('buyModeButton').classList.add('bg-dark/80', 'border', 'border-secondary', 'text-secondary');
+            document.getElementById('amountLabel').innerText = 'Total Grabbit Amount';
+            document.getElementById('amount').placeholder = 'Enter total Grabbit amount';
+            document.getElementById('swapButton').innerText = 'Sell Grabbit';
+            checkAllowance();
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             checkBalances();
-            checkInputStatus();
+            checkAllowance();
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            menuToggle.innerHTML = mobileMenu.classList.contains('hidden')
+                ? '<i class="fa fa-bars"></i>'
+                : '<i class="fa fa-times"></i>';
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileMenu.classList.add('hidden');
+                menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-dark/95', 'shadow-lg');
+            } else {
+                navbar.classList.remove('bg-dark/95', 'shadow-lg');
+            }
         });
     </script>
 </body>
