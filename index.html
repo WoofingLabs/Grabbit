@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>添加 Grabbit 流动性</title>
+    <title>添加 Grabbit-GT 流动性</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="https://woofswap.finance/image/tokens/star.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="https://woofswap.finance/image/tokens/star.png" type="image/x-icon">
     <style>
         :root {
             --primary-color: #ff9100;
@@ -81,6 +81,10 @@
             color: var(--text-color);
             font-size: 1em;
         }
+        input[readonly] {
+            background: #2a2a3d;
+            cursor: not-allowed;
+        }
         .balance-row {
             display: flex;
             justify-content: space-between;
@@ -126,6 +130,17 @@
             color: var(--secondary-color);
             font-style: italic;
         }
+        .progress {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--input-bg);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            font-size: 0.8em;
+        }
+        .progress-item {
+            margin: 5px 0;
+        }
         .spinner {
             display: inline-block;
             width: 16px;
@@ -155,7 +170,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">添加 Grabbit 流动性</div>
+        <div class="header">添加 Grabbit-GT 流动性</div>
         <div class="connect-section">
             <button id="connectWalletButton">连接钱包</button>
             <div id="networkStatus" class="status">点击连接钱包...</div>
@@ -165,10 +180,10 @@
             <input type="text" id="GrabbitAmount" placeholder="输入 Grabbit 数量">
             <div class="balance-row"><span>Grabbit 余额</span><span id="GrabbitBalance">余额: 0</span></div>
             <label>GT 数量</label>
-            <input type="text" id="gtAmount" placeholder="输入 GT 数量">
+            <input type="text" id="gtAmount" placeholder="自动计算" readonly>
             <div class="balance-row"><span>GT 余额</span><span id="gtBalance">余额: 0</span></div>
             <label>滑点容忍度（%）</label>
-            <input type="text" id="slippage" placeholder="输入滑点容忍度（如 5）" value="5">
+            <input type="text" id="slippage" placeholder="输入滑点容忍度（如 1）" value="1">
             <button class="action-button" id="authorizeButton" disabled>授权 Grabbit</button>
             <button class="action-button" id="addLiquidityButton" disabled>添加流动性</button>
         </div>
@@ -176,12 +191,16 @@
             <img src="https://woofswap.finance/image/tokens/star.png" alt="WSTAR">
             <div class="dog-message" id="dogMessage">"Woof! 连接钱包以添加流动性！"</div>
         </div>
+        <div class="progress" id="progressLog">
+            <div class="progress-item" id="progressStatus">等待操作...</div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
         const routerAddress = '0x12814690F59a9CE8bA87dC8cF0692442bAa9C097';
         const GrabbitAddress = '0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0';
         const wgtAddress = '0x6803b8E93b13941F6B73b82E324B80251B3dE338';
+        const pairAddress = '0x45e6B03aD5e581cF3e684F2A0eF3E4dB4680B3EF'; // 从合约 _mainPair 获取
 
         const routerAbi = [
             {
@@ -234,17 +253,36 @@
             }
         ];
 
+        const pairAbi = [
+            {
+                "inputs": [],
+                "name": "getReserves",
+                "outputs": [
+                    { "internalType": "uint112", "name": "_reserve0", "type": "uint112" },
+                    { "internalType": "uint112", "name": "_reserve1", "type": "uint112" },
+                    { "internalType": "uint32", "name": "_blockTimestampLast", "type": "uint32" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "token0",
+                "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
         const chains = {
             RufusChain: {
                 chainId: 10088,
                 chainName: 'Gate Layer',
-                rpcUrl: 'https://gatelayer-mainnet.gatenode.cc',
+                rpcUrl: 'https://gatelayer-rpc.gatenode.cc',
                 blockExplorer: 'https://www.gatescan.org/gatelayer/',
                 nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 }
             }
         };
-
-        let web3, account, routerContract, GrabbitContract;
 
         const dogMessages = {
             connectSuccess: ["Woof! 钱包已连接，准备添加流动性！", "Arf! 连接成功，开始吧！", "Bark! 钱包就位，行动起来！"],
@@ -257,7 +295,6 @@
             addLiquidityFail: ["Woof! 添加流动性失败，检查输入！", "Arf! 出了点问题，请重试！", "Bark! 流动性添加失败！"],
             invalidInput: ["Woof! 输入的地址或数量无效！", "Arf! 输入有误，检查一下！", "Bark! 请检查数量和滑点！"],
             userDenied: ["Woof! 你取消了交易！", "Arf! 交易被取消，重新试试？", "Bark! 你拒绝了交易！"],
-            invalidToken: ["Woof! 代币地址有误，请检查！", "Arf! 代币问题，验证地址！", "Bark! 代币错误，请检查！"],
             insufficientBalance: ["Woof! Grabbit 或 GT 余额不足！", "Arf! 余额不够，补充点吧！", "Bark! 需要更多 Grabbit 或 GT！"],
             insufficientGas: ["Woof! GT 不足以支付 Gas 费用！", "Arf! Gas 费用不够，补充 GT！", "Bark! 需要更多 GT 用于 Gas！"],
             insufficientAllowance: ["Woof! Grabbit 未授权，请先授权！", "Arf! 需要授权 Grabbit！", "Bark! 先授权 Grabbit 再操作！"]
@@ -268,20 +305,45 @@
             return messages[Math.floor(Math.random() * messages.length)];
         }
 
-        async function waitForTransaction(txHash) {
-            let receipt = null;
-            const maxAttempts = 30;
+        let web3, account, routerContract, GrabbitContract, pairContract;
+
+        async function waitForTransaction(txHash, maxAttempts = 30) {
             let attempts = 0;
+            document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
             while (attempts < maxAttempts) {
-                receipt = await web3.eth.getTransactionReceipt(txHash);
+                const receipt = await web3.eth.getTransactionReceipt(txHash).catch(() => null);
                 if (receipt) {
-                    if (receipt.status) return receipt;
-                    throw new Error(`交易 ${txHash} 失败`);
+                    if (receipt.status) {
+                        document.getElementById('progressStatus').innerText = `交易成功: ${txHash}, Gas 使用: ${receipt.gasUsed}`;
+                        return receipt;
+                    }
+                    throw new Error(`交易 ${txHash} 失败, Revert Reason: ${await getRevertReason(txHash)}`);
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 attempts++;
+                document.getElementById('progressStatus').innerText = `等待交易确认: 尝试 ${attempts + 1}/${maxAttempts}...`;
             }
             throw new Error(`交易 ${txHash} 未在 ${maxAttempts} 次尝试后确认`);
+        }
+
+        async function getRevertReason(txHash) {
+            const tx = await web3.eth.getTransaction(txHash);
+            const receipt = await web3.eth.getTransactionReceipt(txHash);
+            if (receipt && !receipt.status) {
+                try {
+                    const code = await web3.eth.getCode(tx.to);
+                    const reason = await web3.eth.call({
+                        to: tx.to,
+                        from: tx.from,
+                        data: tx.input,
+                        gas: tx.gas
+                    }, receipt.blockNumber - 1);
+                    return web3.utils.hexToUtf8(reason).replace(/\0/g, '') || 'Unknown';
+                } catch (e) {
+                    return 'Unknown';
+                }
+            }
+            return 'Unknown';
         }
 
         async function initializeWeb3() {
@@ -296,14 +358,17 @@
                     await checkBalances();
                     document.getElementById('networkStatus').innerText = `已连接到 Gate Layer`;
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
+                    document.getElementById('progressStatus').innerText = '钱包连接成功，准备操作';
                 } catch (error) {
                     console.error("连接错误:", error);
                     document.getElementById('networkStatus').innerText = '钱包连接失败';
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
+                    document.getElementById('progressStatus').innerText = `错误: 连接失败 - ${error.message}`;
                 }
             } else {
                 document.getElementById('networkStatus').innerText = '请安装 MetaMask';
                 document.getElementById('dogMessage').innerText = 'Woof! 未找到 MetaMask！';
+                document.getElementById('progressStatus').innerText = '错误: 未检测到 MetaMask';
             }
         }
 
@@ -336,10 +401,12 @@
             try {
                 routerContract = new web3.eth.Contract(routerAbi, web3.utils.toChecksumAddress(routerAddress));
                 GrabbitContract = new web3.eth.Contract(erc20Abi, web3.utils.toChecksumAddress(GrabbitAddress));
+                pairContract = new web3.eth.Contract(pairAbi, web3.utils.toChecksumAddress(pairAddress));
             } catch (error) {
                 console.error("合约初始化错误:", error);
                 document.getElementById('networkStatus').innerText = '合约初始化失败';
                 document.getElementById('dogMessage').innerText = 'Woof! 合约设置失败！';
+                document.getElementById('progressStatus').innerText = `错误: 合约初始化失败 - ${error.message}`;
             }
         }
 
@@ -349,11 +416,12 @@
                 document.getElementById('addLiquidityButton').disabled = true;
                 document.getElementById('GrabbitBalance').innerText = '余额: 0';
                 document.getElementById('gtBalance').innerText = '余额: 0';
+                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
                 return;
             }
             try {
                 const GrabbitBalance = await GrabbitContract.methods.balanceOf(account).call();
-                // 小数点位数为 1，转换为人类可读格式
+                // Grabbit 小数点位数为 1
                 document.getElementById('GrabbitBalance').innerText = `余额: ${Number(GrabbitBalance / 10).toLocaleString()}`;
                 const gtBalance = await web3.eth.getBalance(account);
                 document.getElementById('gtBalance').innerText = `余额: ${Number(web3.utils.fromWei(gtBalance, 'ether')).toLocaleString()} GT`;
@@ -364,6 +432,45 @@
                 document.getElementById('gtBalance').innerText = '余额: 查询失败';
                 document.getElementById('authorizeButton').disabled = true;
                 document.getElementById('addLiquidityButton').disabled = true;
+                document.getElementById('progressStatus').innerText = `错误: 余额查询失败 - ${error.message}`;
+            }
+        }
+
+        async function calculateGTAmount(GrabbitAmount) {
+            const gtAmountInput = document.getElementById('gtAmount');
+            if (!web3 || !pairContract || !GrabbitAmount || isNaN(GrabbitAmount) || GrabbitAmount <= 0) {
+                gtAmountInput.value = '';
+                return;
+            }
+            try {
+                const reserves = await pairContract.methods.getReserves().call({ timeout: 10000 });
+                const token0 = await pairContract.methods.token0().call({ timeout: 10000 });
+                // Grabbit 小数点位数为 1
+                const GrabbitAmountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
+                let gtAmountWei;
+
+                const isGrabbitToken0 = token0.toLowerCase() === GrabbitAddress.toLowerCase();
+                const reserveGrabbit = isGrabbitToken0 ? reserves[0] : reserves[1];
+                const reserveWgt = isGrabbitToken0 ? reserves[1] : reserves[0];
+
+                if (web3.utils.toBN(reserveGrabbit).isZero() || web3.utils.toBN(reserveWgt).isZero()) {
+                    document.getElementById('networkStatus').innerText = '池子未初始化，默认 GT 数量';
+                    gtAmountInput.value = '0.02'; // 默认值，与成功交易匹配
+                    return;
+                }
+
+                gtAmountWei = web3.utils.toBN(GrabbitAmountWei)
+                    .mul(web3.utils.toBN(reserveWgt))
+                    .div(web3.utils.toBN(reserveGrabbit));
+                const gtAmount = Number(web3.utils.fromWei(gtAmountWei, 'ether')).toFixed(6);
+                gtAmountInput.value = gtAmount;
+                document.getElementById('networkStatus').innerText = `根据池子比例计算 GT: ${gtAmount}`;
+                document.getElementById('progressStatus').innerText = `计算 GT 成功: ${gtAmount}`;
+            } catch (error) {
+                console.error("计算 GT 数量错误:", error);
+                document.getElementById('networkStatus').innerText = '无法计算 GT，请手动输入';
+                gtAmountInput.value = '0.02'; // 默认值
+                document.getElementById('progressStatus').innerText = `错误: 计算 GT 失败 - ${error.message}`;
             }
         }
 
@@ -377,20 +484,23 @@
             if (!GrabbitAmount || isNaN(GrabbitAmount) || GrabbitAmount <= 0) {
                 document.getElementById('authorizeButton').disabled = true;
                 document.getElementById('addLiquidityButton').disabled = true;
+                document.getElementById('gtAmount').value = '';
                 return;
             }
             try {
-                // 小数点位数为 1，转换为合约单位 (乘以 10^1)
+                // Grabbit 小数点位数为 1
                 const amountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const allowance = await GrabbitContract.methods.allowance(account, routerAddress).call();
                 const sufficientAllowance = web3.utils.toBN(allowance).gte(amountWei);
                 document.getElementById('authorizeButton').disabled = sufficientAllowance;
                 document.getElementById('addLiquidityButton').disabled = !sufficientAllowance;
+                await calculateGTAmount(GrabbitAmount);
                 document.getElementById('networkStatus').innerText = sufficientAllowance ? "Grabbit 已授权，准备添加流动性" : "请先授权 Grabbit";
             } catch (error) {
                 console.error("授权检查错误:", error);
                 document.getElementById('networkStatus').innerText = "检查授权状态失败";
                 document.getElementById('dogMessage').innerText = getRandomMessage('authorizeFail');
+                document.getElementById('progressStatus').innerText = `错误: 授权检查失败 - ${error.message}`;
             }
         }
 
@@ -403,58 +513,58 @@
             if (!web3 || !account || !GrabbitContract) {
                 status.innerText = "请连接钱包或检查代币地址";
                 dogMessage.innerText = getRandomMessage('connectFail');
+                document.getElementById('progressStatus').innerText = '错误: 未连接钱包或合约';
                 return;
             }
             if (!GrabbitAmount || isNaN(GrabbitAmount) || GrabbitAmount <= 0) {
                 status.innerText = "请输入有效的 Grabbit 数量";
                 dogMessage.innerText = getRandomMessage('invalidInput');
+                document.getElementById('progressStatus').innerText = '错误: 无效的 Grabbit 数量';
                 return;
             }
 
-            try {
-                authorizeButton.disabled = true;
-                authorizeButton.innerHTML = '授权中... <span class="spinner"></span>';
-                status.innerText = "正在授权 Grabbit...";
-                dogMessage.innerText = getRandomMessage('authorizeStart');
+            authorizeButton.disabled = true;
+            authorizeButton.innerHTML = '授权中... <span class="spinner"></span>';
+            status.innerText = "正在授权 Grabbit...";
+            dogMessage.innerText = getRandomMessage('authorizeStart');
+            document.getElementById('progressStatus').innerText = '授权 Grabbit 中...';
 
-                // 小数点位数为 1，转换为合约单位
+            try {
+                // Grabbit 小数点位数为 1
                 const amountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const gasPrice = await web3.eth.getGasPrice();
                 const estimatedGas = await GrabbitContract.methods.approve(
                     routerAddress,
                     amountWei
                 ).estimateGas({ from: account });
-                const nativeBalance = await web3.eth.getBalance(account);
-                const gasCost = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(estimatedGas));
-                if (web3.utils.toBN(nativeBalance).lt(gasCost)) {
-                    status.innerText = "GT 不足以支付 Gas 费用";
-                    dogMessage.innerText = getRandomMessage('insufficientGas');
-                    return;
-                }
-
                 const tx = await GrabbitContract.methods.approve(
                     routerAddress,
                     amountWei
                 ).send({
                     from: account,
-                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000))
+                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 1000000)),
+                    gasPrice
                 });
+                document.getElementById('progressStatus').innerText = `授权提交: ${tx.transactionHash}`;
                 await waitForTransaction(tx.transactionHash);
-
                 status.innerText = "Grabbit 授权成功！";
                 dogMessage.innerText = getRandomMessage('authorizeSuccess');
+                document.getElementById('progressStatus').innerText = `授权成功: ${tx.transactionHash}`;
                 await checkAuthorizationStatus();
             } catch (error) {
                 console.error("授权错误:", error);
                 if (error.code === 4001) {
                     status.innerText = "用户取消了授权";
                     dogMessage.innerText = getRandomMessage('userDenied');
+                    document.getElementById('progressStatus').innerText = '错误: 用户取消授权';
                 } else if (error.message.includes('insufficient funds for gas')) {
                     status.innerText = "GT 不足以支付 Gas 费用";
                     dogMessage.innerText = getRandomMessage('insufficientGas');
+                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
                 } else {
                     status.innerText = "授权失败，请检查代币地址";
                     dogMessage.innerText = getRandomMessage('authorizeFail');
+                    document.getElementById('progressStatus').innerText = `错误: 授权失败 - ${error.message}`;
                 }
             } finally {
                 authorizeButton.disabled = false;
@@ -473,37 +583,42 @@
             if (!web3 || !account) {
                 status.innerText = "请连接钱包";
                 dogMessage.innerText = getRandomMessage('connectFail');
+                document.getElementById('progressStatus').innerText = '错误: 未连接钱包';
                 return;
             }
             if (!GrabbitAmount || isNaN(GrabbitAmount) || GrabbitAmount <= 0 || !gtAmount || isNaN(gtAmount) || gtAmount <= 0 || !slippage || isNaN(slippage) || slippage < 0) {
-                status.innerText = "请输入有效的 Grabbit 数量、GT 数量或滑点";
+                status.innerText = "请输入有效的 Grabbit 数量或滑点";
                 dogMessage.innerText = getRandomMessage('invalidInput');
+                document.getElementById('progressStatus').innerText = '错误: 无效的输入';
                 return;
             }
 
-            try {
-                addLiquidityButton.disabled = true;
-                addLiquidityButton.innerHTML = '添加中... <span class="spinner"></span>';
-                status.innerText = "检查余额和 Gas...";
-                dogMessage.innerText = getRandomMessage('addLiquidityStart');
+            addLiquidityButton.disabled = true;
+            addLiquidityButton.innerHTML = '添加中... <span class="spinner"></span>';
+            status.innerText = "执行添加流动性...";
+            dogMessage.innerText = getRandomMessage('addLiquidityStart');
+            document.getElementById('progressStatus').innerText = '添加流动性中...';
 
-                // 小数点位数为 1，转换为合约单位
+            try {
+                // Grabbit 小数点位数为 1
                 const GrabbitAmountWei = web3.utils.toBN(GrabbitAmount).mul(web3.utils.toBN(10));
                 const gtAmountWei = web3.utils.toWei(gtAmount, 'ether');
                 const slippagePercent = parseFloat(slippage) / 100;
-                const GrabbitAmountMin = web3.utils.toBN(GrabbitAmountWei).mul(web3.utils.toBN((1 - slippagePercent) * 1000)).div(web3.utils.toBN(1000));
-                const gtAmountMin = web3.utils.toBN(gtAmountWei).mul(web3.utils.toBN((1 - slippagePercent) * 1000)).div(web3.utils.toBN(1000));
+                const GrabbitAmountMin = web3.utils.toBN(GrabbitAmountWei).mul(web3.utils.toBN(Math.floor((1 - slippagePercent) * 1000))).div(web3.utils.toBN(1000));
+                const gtAmountMin = web3.utils.toBN(gtAmountWei).mul(web3.utils.toBN(Math.floor((1 - slippagePercent) * 1000))).div(web3.utils.toBN(1000));
 
                 const GrabbitBalance = await GrabbitContract.methods.balanceOf(account).call();
                 const gtBalance = await web3.eth.getBalance(account);
                 if (web3.utils.toBN(GrabbitBalance).lt(GrabbitAmountWei)) {
                     status.innerText = "Grabbit 余额不足";
                     dogMessage.innerText = getRandomMessage('insufficientBalance');
+                    document.getElementById('progressStatus').innerText = '错误: Grabbit 余额不足';
                     return;
                 }
                 if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei))) {
                     status.innerText = "GT 余额不足";
                     dogMessage.innerText = getRandomMessage('insufficientBalance');
+                    document.getElementById('progressStatus').innerText = '错误: GT 余额不足';
                     return;
                 }
 
@@ -511,6 +626,7 @@
                 if (web3.utils.toBN(allowance).lt(GrabbitAmountWei)) {
                     status.innerText = "请先授权 Grabbit";
                     dogMessage.innerText = getRandomMessage('insufficientAllowance');
+                    document.getElementById('progressStatus').innerText = '错误: Grabbit 未授权';
                     return;
                 }
 
@@ -527,8 +643,17 @@
                 if (web3.utils.toBN(gtBalance).lt(web3.utils.toBN(gtAmountWei).add(gasCost))) {
                     status.innerText = "GT 不足以支付 Gas 费用";
                     dogMessage.innerText = getRandomMessage('insufficientGas');
+                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
                     return;
                 }
+
+                console.log({
+                    GrabbitAmountWei: GrabbitAmountWei.toString(),
+                    gtAmountWei: web3.utils.fromWei(gtAmountWei, 'ether'),
+                    GrabbitAmountMin: GrabbitAmountMin.toString(),
+                    gtAmountMin: web3.utils.fromWei(gtAmountMin, 'ether'),
+                    deadline: Math.floor(Date.now() / 1000) + 60 * 20
+                });
 
                 const tx = await routerContract.methods.addLiquidityETH(
                     GrabbitAddress,
@@ -540,24 +665,41 @@
                 ).send({
                     from: account,
                     value: gtAmountWei,
-                    gas: web3.utils.toHex(Math.min(estimatedBox * 2, 3000000))
+                    gas: web3.utils.toHex(Math.min(estimatedGas * 2, 3000000)),
+                    gasPrice
                 });
+                document.getElementById('progressStatus').innerText = `交易提交: ${tx.transactionHash}`;
                 await waitForTransaction(tx.transactionHash);
-
                 status.innerText = "流动性添加成功！";
                 dogMessage.innerText = getRandomMessage('addLiquiditySuccess');
+                document.getElementById('progressStatus').innerText = `成功: ${tx.transactionHash}, Gas 使用: ${tx.gasUsed}`;
                 await checkBalances();
             } catch (error) {
                 console.error("添加流动性错误:", error);
                 if (error.code === 4001) {
                     status.innerText = "用户取消了交易";
                     dogMessage.innerText = getRandomMessage('userDenied');
+                    document.getElementById('progressStatus').innerText = '错误: 用户取消交易';
                 } else if (error.message.includes('insufficient funds for gas')) {
                     status.innerText = "GT 不足以支付 Gas 费用";
                     dogMessage.innerText = getRandomMessage('insufficientGas');
-                } else {
-                    status.innerText = "添加流动性失败: " + (error.message || "未知错误");
+                    document.getElementById('progressStatus').innerText = '错误: Gas 费用不足';
+                } else if (error.message.includes('TransferHelper: TRANSFER_FROM_FAILED')) {
+                    status.innerText = "Grabbit 转账失败，请检查余额或授权";
+                    dogMessage.innerText = getRandomMessage('insufficientBalance');
+                    document.getElementById('progressStatus').innerText = '错误: Grabbit 转账失败';
+                } else if (error.message.includes('UniswapV2: INSUFFICIENT_LIQUIDITY_MINTED')) {
+                    status.innerText = "流动性添加失败，比例可能不匹配";
                     dogMessage.innerText = getRandomMessage('addLiquidityFail');
+                    document.getElementById('progressStatus').innerText = '错误: 流动性比例不匹配';
+                } else if (error.message.includes('UniswapV2: INSUFFICIENT_INPUT_AMOUNT')) {
+                    status.innerText = "输入金额不足，请增加 Grabbit 或 GT";
+                    dogMessage.innerText = getRandomMessage('addLiquidityFail');
+                    document.getElementById('progressStatus').innerText = '错误: 输入金额不足';
+                } else {
+                    status.innerText = `添加流动性失败: ${error.message || "未知错误"}`;
+                    dogMessage.innerText = getRandomMessage('addLiquidityFail');
+                    document.getElementById('progressStatus').innerText = `错误: ${error.message}`;
                 }
             } finally {
                 addLiquidityButton.disabled = false;
@@ -569,7 +711,6 @@
         document.getElementById('authorizeButton').addEventListener('click', authorizeToken);
         document.getElementById('addLiquidityButton').addEventListener('click', addLiquidity);
         document.getElementById('GrabbitAmount').addEventListener('input', checkAuthorizationStatus);
-        document.getElementById('gtAmount').addEventListener('input', checkAuthorizationStatus);
         document.getElementById('slippage').addEventListener('input', checkAuthorizationStatus);
 
         document.addEventListener('DOMContentLoaded', () => {
