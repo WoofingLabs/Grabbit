@@ -200,7 +200,7 @@
         const routerAddress = '0x12814690F59a9CE8bA87dC8cF0692442bAa9C097';
         const GrabbitAddress = '0xA930Bbe6062cB0D67a2152F30a63Adb846e58fE0';
         const wgtAddress = '0x6803b8E93b13941F6B73b82E324B80251B3dE338';
-        const pairAddress = '0x45e6B03aD5e581cF3e684F2A0eF3E4dB4680B3EF'; // 从合约 _mainPair 获取
+        const pairAddress = '0x691676510864d0f2f46e93aC9b0476702AfCC076'; // 更新为新的交易对地址
 
         const routerAbi = [
             {
@@ -455,7 +455,7 @@
 
                 if (web3.utils.toBN(reserveGrabbit).isZero() || web3.utils.toBN(reserveWgt).isZero()) {
                     document.getElementById('networkStatus').innerText = '池子未初始化，默认 GT 数量';
-                    gtAmountInput.value = '0.02'; // 默认值，与成功交易匹配
+                    gtAmountInput.value = '0.02'; // 默认值，与 GT-GDOG 一致
                     return;
                 }
 
