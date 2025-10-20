@@ -75,7 +75,7 @@
         </div>
         <h1 class="font-display text-5xl md:text-7xl mb-6 text-primary text-shadow-glow">Grabbit 参数管理</h1>
         <p class="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto mb-10">
-            实时查看与一键设置合约参数
+            实时查看与自定义设置（小数位：1）
         </p>
 
         <div class="bg-dark/50 p-6 rounded-lg border border-primary/30 max-w-4xl mx-auto mb-8">
@@ -91,62 +91,85 @@
                 </div>
                 <p id="walletStatus" class="text-light-gray text-sm">钱包地址: 未连接</p>
 
-                <!-- 参数管理面板（连接后显示）-->
+                <!-- 参数面板 -->
                 <div id="adminPanel" class="hidden mt-6 space-y-6">
-                    <h2 class="text-2xl font-bold text-primary mb-4">合约参数一键设置</h2>
+                    <h2 class="text-2xl font-bold text-primary mb-4">合约参数设置</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        <!-- 1. 关闭自动分红处理 -->
+                        <!-- 1. gasForProcessing -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-green-500/30">
-                            <h3 class="font-bold text-green-400 text-sm">关闭自动分红处理</h3>
+                            <h3 class="font-bold text-green-400 text-sm">自动分红 Gas 限制</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：<strong>防卡死</strong></p>
                             <p class="text-xs mt-2">当前值: <span id="currentGas" class="font-mono">读取中...</span></p>
-                            <button onclick="setGasForProcessing(0)" class="mt-2 w-full py-2 bg-green-600 hover:bg-green-700 rounded text-xs">设为 0（推荐）</button>
+                            <div class="flex space-x-1 mt-2">
+                                <input type="number" id="inputGas" placeholder="如: 300000" class="flex-1 px-2 py-1 bg-dark/80 border border-primary/20 rounded text-xs text-white focus:outline-none focus:border-secondary">
+                                <button onclick="setGasForProcessing(getInputValue('inputGas'))" class="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs">设置</button>
+                                <button onclick="setGasForProcessing(0)" class="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs">设 0</button>
+                            </div>
                         </div>
 
-                        <!-- 2. 提高分红门槛 -->
+                        <!-- 2. mushHoldNum -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/30">
-                            <h3 class="font-bold text-yellow-400 text-sm">提高分红门槛</h3>
+                            <h3 class="font-bold text-yellow-400 text-sm">分红门槛（持仓）</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：<strong>防刷</strong></p>
                             <p class="text-xs mt-2">当前值: <span id="currentHold" class="font-mono">读取中...</span></p>
-                            <button onclick="setMinHoldCount('2100000000')" class="mt-2 w-full py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-xs">设为 1%（2.1亿）</button>
+                            <div class="flex space-x-1 mt-2">
+                                <input type="number" step="0.1" id="inputHold" placeholder="如: 210000000.0" class="flex-1 px-2 py-1 bg-dark/80 border border-primary/20 rounded text-xs text-white focus:outline-none focus:border-secondary">
+                                <button onclick="setMinHoldCount(toWei('inputHold'))" class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 rounded text-xs">设置</button>
+                                <button onclick="setMinHoldCount(toWei(210000000))" class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 rounded text-xs">设 1%</button>
+                            </div>
                         </div>
 
-                        <!-- 3. 关闭空投 -->
+                        <!-- 3. airdropNumbs -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-red-500/30">
-                            <h3 class="font-bold text-red-400 text-sm">关闭空投功能</h3>
+                            <h3 class="font-bold text-red-400 text-sm">空投数量</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：防垃圾地址</p>
                             <p class="text-xs mt-2">当前值: <span id="currentAirdrop" class="font-mono">读取中...</span></p>
-                            <button onclick="setAirdropNumbs(0)" class="mt-2 w-full py-2 bg-red-600 hover:bg-red-700 rounded text-xs">关闭空投</button>
+                            <div class="flex space-x-1 mt-2">
+                                <input type="number" id="inputAirdrop" placeholder="如: 100" class="flex-1 px-2 py-1 bg-dark/80 border border-primary/20 rounded text-xs text-white focus:outline-none focus:border-secondary">
+                                <button onclick="setAirdropNumbs(getInputValue('inputAirdrop'))" class="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs">设置</button>
+                                <button onclick="setAirdropNumbs(0)" class="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs">关闭</button>
+                            </div>
                         </div>
 
-                        <!-- 4. 提高 Swap 门槛 -->
+                        <!-- 4. swapAtAmount -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-purple-500/30">
-                            <h3 class="font-bold text-purple-400 text-sm">提高 Swap 门槛</h3>
+                            <h3 class="font-bold text-purple-400 text-sm">Swap 触发门槛</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：减少自动操作</p>
                             <p class="text-xs mt-2">当前值: <span id="currentSwap" class="font-mono">读取中...</span></p>
-                            <button onclick="setSwapAtAmount('2100000000')" class="mt-2 w-full py-2 bg-purple-600 hover:bg-purple-700 rounded text-xs">设为 1%</button>
+                            <div class="flex space-x-1 mt-2">
+                                <input type="number" step="0.1" id="inputSwap" placeholder="如: 210000000.0" class="flex-1 px-2 py-1 bg-dark/80 border border-primary/20 rounded text-xs text-white focus:outline-none focus:border-secondary">
+                                <button onclick="setSwapAtAmount(toWei('inputSwap'))" class="px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs">设置</button>
+                                <button onclick="setSwapAtAmount(toWei(210000000))" class="px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs">设 1%</button>
+                            </div>
                         </div>
 
-                        <!-- 5. 关闭转账税 -->
+                        <!-- 5. enableTransferFee -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-cyan-500/30">
-                            <h3 class="font-bold text-cyan-400 text-sm">关闭转账税</h3>
+                            <h3 class="font-bold text-cyan-400 text-sm">转账税开关</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：提升体验</p>
                             <p class="text-xs mt-2">当前: <span id="currentTransferFee" class="font-mono">读取中...</span></p>
-                            <button onclick="setEnableTransferFee(false)" class="mt-2 w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-xs">关闭转账税</button>
+                            <div class="flex space-x-1 mt-2">
+                                <button onclick="setEnableTransferFee(true)" class="flex-1 py-1 bg-cyan-600 hover:bg-cyan-700 rounded text-xs">启用</button>
+                                <button onclick="setEnableTransferFee(false)" class="flex-1 py-1 bg-cyan-600 hover:bg-cyan-700 rounded text-xs">关闭</button>
+                            </div>
                         </div>
 
-                        <!-- 6. 设置 LP 接收地址 -->
+                        <!-- 6. generateLpReceiverAddr -->
                         <div class="bg-gray-800/50 p-4 rounded-lg border border-orange-500/30">
-                            <h3 class="font-bold text-orange-400 text-sm">设置 LP 接收地址</h3>
+                            <h3 class="font-bold text-orange-400 text-sm">LP 接收地址</h3>
                             <p class="text-xs text-gray-300 mt-1">用途：防资金卡住</p>
                             <p class="text-xs mt-2">当前: <span id="currentLpAddr" class="font-mono text-xs">读取中...</span></p>
-                            <button onclick="setGenerateLpReceiverAddr('0x000000000000000000000000000000000000dEaD')" class="mt-2 w-full py-2 bg-orange-600 hover:bg-orange-700 rounded text-xs">设为黑洞</button>
+                            <div class="flex space-x-1 mt-2">
+                                <input type="text" id="inputLpAddr" placeholder="0x..." class="flex-1 px-2 py-1 bg-dark/80 border border-primary/20 rounded text-xs text-white focus:outline-none focus:border-secondary">
+                                <button onclick="setGenerateLpReceiverAddr(document.getElementById('inputLpAddr').value)" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 rounded text-xs">设置</button>
+                                <button onclick="setGenerateLpReceiverAddr('0x000000000000000000000000000000000000dEaD')" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 rounded text-xs">黑洞</button>
+                            </div>
                         </div>
 
                     </div>
 
-                    <!-- 7. 永久关闭税收调整 -->
+                    <!-- 7. disableChangeTax -->
                     <div class="mt-6 bg-pink-900/30 p-4 rounded-lg border border-pink-500/30 text-center">
                         <h3 class="font-bold text-pink-400 text-sm">永久关闭税收调整</h3>
                         <p class="text-xs text-gray-300 mt-1">用途：永久锁定税率</p>
@@ -155,12 +178,7 @@
                     </div>
 
                     <p id="txStatus" class="text-sm text-gray-400 mt-4"></p>
-                    <p class="text-xs text-gray-500">参数每 10 秒自动刷新</p>
-                </div>
-
-                <!-- 未连接提示 -->
-                <div id="notConnected" class="hidden mt-6 text-center">
-                    <p class="text-xl text-gray-400">请先连接钱包查看参数</p>
+                    <p class="text-xs text-gray-500">参数每 10 秒自动刷新，读取失败会自动重试</p>
                 </div>
             </div>
         </div>
@@ -169,15 +187,19 @@
 
 <footer class="bg-dark/95 py-12 border-t border-primary/20">
     <div class="container mx-auto px-4 text-center">
-        <p class="text-light-gray text-sm">© 2025 Grabbit. 版权所有。请谨慎操作，DYOR。</p>
+        <p class="text-light-gray text-sm">© 2025 Grabbit. 版权所有。</p>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
 <script>
     const CONTRACT = '0xa930bbe6062cb0d67a2152f30a63adb846e58fe0';
-    const RPC_URL = 'https://gatelayer-mainnet.gatenode.cc/';
+    const RPCS = [
+        'https://gatelayer-mainnet.gatenode.cc/',
+        'https://rpc.gatelayer.io/'
+    ];
     const CHAIN_ID = 10088;
+    const DECIMALS = 1;
 
     const ABI = [
         {"inputs":[],"name":"gasForProcessing","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -196,61 +218,102 @@
         {"inputs":[],"name":"disableChangeTax","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
 
-    const chains = {
-        GateLayer: {
-            chainId: CHAIN_ID,
-            chainName: 'Gate Layer',
-            rpcUrl: RPC_URL,
-            blockExplorer: 'https://www.gatescan.org/gatelayer/',
-            nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 }
-        }
-    };
+    let web3, account, contract, currentRpcIndex = 0;
 
-    let web3, account, contract;
+    // 辅助函数
+    function getInputValue(id) {
+        const val = document.getElementById(id).value.trim();
+        return val && !isNaN(val) ? Math.floor(Number(val)) : 0;
+    }
 
-    async function initializeWeb3() {
+    function toWei(idOrValue) {
+        let val = typeof idOrValue === 'string' ? document.getElementById(idOrValue).value.trim() : idOrValue.toString();
+        if (!val || isNaN(val)) return '0';
+        return (BigInt(Math.floor(Number(val) * 10 ** DECIMALS))).toString();
+    }
+
+    function fromWei(value) {
+        return (Number(value) / 10 ** DECIMALS).toLocaleString(undefined, { maximumFractionDigits: DECIMALS });
+    }
+
+    // 初始化 Web3（带 RPC 轮询）
+    async function initWeb3() {
         if (!window.ethereum) {
             document.getElementById('networkStatus').innerText = '请安装 MetaMask';
-            return;
+            return false;
+        }
+        for (let i = 0; i < RPCS.length; i++) {
+            try {
+                web3 = new Web3(RPCS[i]);
+                const networkId = await web3.eth.net.getId();
+                if (networkId === CHAIN_ID) {
+                    currentRpcIndex = i;
+                    return true;
+                }
+            } catch (e) { console.log(`RPC ${RPCS[i]} 失败`, e); }
         }
         web3 = new Web3(window.ethereum);
+        return true;
+    }
+
+    // 连接钱包
+    async function initializeWeb3() {
+        document.getElementById('networkStatus').innerText = '正在连接...';
+        if (!await initWeb3()) return;
+
         try {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             account = (await web3.eth.getAccounts())[0];
             document.getElementById('connectWalletButton').innerText = `已连接: ${account.slice(0,6)}...${account.slice(-4)}`;
             document.getElementById('walletStatus').innerHTML = `钱包地址: <span class="font-mono text-blue-400">${account}</span>`;
-            await switchNetwork('GateLayer');
+
+            await switchNetwork();
             contract = new web3.eth.Contract(ABI, CONTRACT);
+
             document.getElementById('adminPanel').classList.remove('hidden');
-            document.getElementById('notConnected').classList.add('hidden');
-            loadAllValues();
-            setInterval(loadAllValues, 10000);
             document.getElementById('networkStatus').innerText = '已连接 GateLayer (ID: 10088)';
+            loadAllValues(); // 立即刷新
+            setInterval(loadAllValuesWithRetry, 10000);
         } catch (error) {
             document.getElementById('networkStatus').innerText = '连接失败: ' + (error.message || '未知错误');
         }
     }
 
-    async function switchNetwork(chain) {
-        const config = chains[chain];
+    // 切换网络
+    async function switchNetwork() {
         try {
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: `0x${config.chainId.toString(16)}` }]
+                params: [{ chainId: `0x${CHAIN_ID.toString(16)}` }]
             });
         } catch (error) {
             if (error.code === 4902) {
                 await window.ethereum.request({
                     method: 'wallet_addEthereumChain',
                     params: [{
-                        chainId: `0x${config.chainId.toString(16)}`,
-                        chainName: config.chainName,
-                        rpcUrls: [config.rpcUrl],
-                        nativeCurrency: config.nativeCurrency,
-                        blockExplorerUrls: [config.blockExplorer]
+                        chainId: `0x${CHAIN_ID.toString(16)}`,
+                        chainName: 'Gate Layer',
+                        rpcUrls: RPCS,
+                        nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 },
+                        blockExplorerUrls: ['https://www.gatescan.org/gatelayer/']
                     }]
                 });
             } else throw error;
+        }
+    }
+
+    // 带重试的读取
+    async function loadAllValuesWithRetry() {
+        for (let i = 0; i < 3; i++) {
+            try {
+                await loadAllValues();
+                return;
+            } catch (e) {
+                console.log(`读取失败，重试 ${i+1}/3`, e);
+                if (i === 2) {
+                    document.getElementById('txStatus').innerHTML = '<span class="text-red-400">读取失败，网络异常</span>';
+                }
+            }
         }
     }
 
@@ -266,18 +329,19 @@
                 contract.methods.generateLpReceiverAddr().call(),
                 contract.methods.enableChangeTax().call()
             ]);
-            document.getElementById('currentGas').textContent = gas;
-            document.getElementById('currentHold').textContent = (Number(hold) / 10).toLocaleString();
-            document.getElementById('currentAirdrop').textContent = airdrop;
-            document.getElementById('currentSwap').textContent = (Number(swap) / 10).toLocaleString();
+            document.getElementById('currentGas').textContent = Number(gas).toLocaleString();
+            document.getElementById('currentHold').textContent = fromWei(hold);
+            document.getElementById('currentAirdrop').textContent = Number(airdrop).toLocaleString();
+            document.getElementById('currentSwap').textContent = fromWei(swap);
             document.getElementById('currentTransferFee').textContent = transfer ? '启用' : '关闭';
             document.getElementById('currentLpAddr').textContent = lp.slice(0,6) + '...' + lp.slice(-4);
             document.getElementById('currentChangeTax').textContent = change ? '启用' : '已禁用';
         } catch (err) {
-            console.error(err);
+            throw err;
         }
     }
 
+    // 发送交易
     async function sendTx(method) {
         if (!account) {
             document.getElementById('txStatus').textContent = '请先连接钱包';
@@ -291,15 +355,19 @@
                 <span class="text-green-400">成功！</span> 
                 <a href="https://www.gatescan.org/gatelayer/tx/${tx.transactionHash}" target="_blank" class="text-blue-400 underline">查看交易</a>
             `;
-            setTimeout(loadAllValues, 3000);
+            setTimeout(loadAllValuesWithRetry, 3000);
         } catch (err) {
+            const msg = err.message;
             document.getElementById('txStatus').innerHTML = `
-                <span class="text-red-400">失败：</span> ${err.message.includes('not the owner') ? '你不是 Owner' : err.message.includes('denied') ? '用户取消' : err.message}
+                <span class="text-red-400">失败：</span> 
+                ${msg.includes('not the owner') ? '你不是 Owner' : 
+                 msg.includes('denied') ? '用户取消' : 
+                 msg.includes('timeout') ? '网络超时' : msg}
             `;
         }
     }
 
-    // 一键设置函数
+    // 一键设置
     function setGasForProcessing(v) { sendTx(contract.methods.setGasForProcessing(v)); }
     function setMinHoldCount(v) { sendTx(contract.methods.setMinHoldCount(v)); }
     function setAirdropNumbs(v) { sendTx(contract.methods.setAirdropNumbs(v)); }
@@ -312,26 +380,19 @@
         navigator.clipboard.writeText(CONTRACT).then(() => {
             const n = document.createElement('div');
             n.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
-            n.textContent = '合约地址已复制！';
+            n.textContent = '已复制！';
             document.body.appendChild(n);
-            setTimeout(() => { n.style.opacity = '0'; n.style.transition = 'opacity 0.3s'; setTimeout(() => document.body.removeChild(n), 300); }, 2000);
+            setTimeout(() => { n.remove(); }, 2000);
         });
     }
 
-    // 事件绑定
+    // 事件
     document.getElementById('connectWalletButton').onclick = initializeWeb3;
-
-    // 移动端菜单
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenu = document.getElementById('mobileMenu');
     menuToggle.onclick = () => {
         mobileMenu.classList.toggle('hidden');
         menuToggle.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="fa fa-bars"></i>' : '<i class="fa fa-times"></i>';
-    };
-
-    // 滚动效果
-    window.onscroll = () => {
-        document.getElementById('navbar').classList.toggle('bg-dark/95', window.scrollY > 50);
     };
 </script>
 </body>
