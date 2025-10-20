@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grabbit 合约管理</title>
+    <title>Grabbit 参数管理</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/WoofingLabs/Grabbit/refs/heads/main/images/1.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -60,7 +60,7 @@
     </div>
     <div id="mobileMenu" class="md:hidden bg-dark/95 absolute w-full top-full py-4 px-4 hidden">
         <div class="flex flex-col space-y-4">
-            <a href="#admin" class="hover:text-primary transition-colors py-2 text-white">Owner 控制台</a>
+            <a href="#admin" class="hover:text-primary transition-colors py-2 text-white">参数管理</a>
         </div>
     </div>
 </header>
@@ -73,9 +73,9 @@
         <div class="w-48 h-48 mx-auto mb-8 animate-float">
             <img src="https://raw.githubusercontent.com/WoofingLabs/Grabbit/refs/heads/main/images/1.png" alt="Grabbit Logo" class="w-full h-full object-cover rounded-full border-4 border-secondary/50 glow-border">
         </div>
-        <h1 class="font-display text-5xl md:text-7xl mb-6 text-primary text-shadow-glow">Grabbit 合约管理</h1>
+        <h1 class="font-display text-5xl md:text-7xl mb-6 text-primary text-shadow-glow">Grabbit 参数管理</h1>
         <p class="text-xl md:text-2xl text-light-gray max-w-3xl mx-auto mb-10">
-            实时监控与一键优化合约参数
+            实时查看与一键设置合约参数
         </p>
 
         <div class="bg-dark/50 p-6 rounded-lg border border-primary/30 max-w-4xl mx-auto mb-8">
@@ -91,9 +91,9 @@
                 </div>
                 <p id="walletStatus" class="text-light-gray text-sm">钱包地址: 未连接</p>
 
-                <!-- Owner 控制台（仅 Owner 可见）-->
-                <div id="ownerPanel" class="hidden mt-6 space-y-6">
-                    <h2 class="text-2xl font-bold text-primary mb-4">Owner 参数管理</h2>
+                <!-- 参数管理面板（连接后显示）-->
+                <div id="adminPanel" class="hidden mt-6 space-y-6">
+                    <h2 class="text-2xl font-bold text-primary mb-4">合约参数一键设置</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <!-- 1. 关闭自动分红处理 -->
@@ -158,10 +158,9 @@
                     <p class="text-xs text-gray-500">参数每 10 秒自动刷新</p>
                 </div>
 
-                <!-- 非 Owner 提示 -->
-                <div id="notOwner" class="hidden mt-6 text-center">
-                    <p class="text-xl text-red-400">你不是合约拥有者，无法操作。</p>
-                    <p class="text-sm text-gray-500 mt-2">请使用部署者钱包连接。</p>
+                <!-- 未连接提示 -->
+                <div id="notConnected" class="hidden mt-6 text-center">
+                    <p class="text-xl text-gray-400">请先连接钱包查看参数</p>
                 </div>
             </div>
         </div>
@@ -188,7 +187,6 @@
         {"inputs":[],"name":"enableTransferFee","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"generateLpReceiverAddr","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"enableChangeTax","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setGasForProcessing","outputs":[],"stateMutability":"nonpayable","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setMinHoldCount","outputs":[],"stateMutability":"nonpayable","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setAirdropNumbs","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -208,7 +206,7 @@
         }
     };
 
-    let web3, account, contract, isOwner = false;
+    let web3, account, contract;
 
     async function initializeWeb3() {
         if (!window.ethereum) {
@@ -223,7 +221,10 @@
             document.getElementById('walletStatus').innerHTML = `钱包地址: <span class="font-mono text-blue-400">${account}</span>`;
             await switchNetwork('GateLayer');
             contract = new web3.eth.Contract(ABI, CONTRACT);
-            await checkOwner();
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('notConnected').classList.add('hidden');
+            loadAllValues();
+            setInterval(loadAllValues, 10000);
             document.getElementById('networkStatus').innerText = '已连接 GateLayer (ID: 10088)';
         } catch (error) {
             document.getElementById('networkStatus').innerText = '连接失败: ' + (error.message || '未知错误');
@@ -253,26 +254,8 @@
         }
     }
 
-    async function checkOwner() {
-        try {
-            const owner = await contract.methods.owner().call();
-            isOwner = owner.toLowerCase() === account.toLowerCase();
-            if (isOwner) {
-                document.getElementById('ownerPanel').classList.remove('hidden');
-                document.getElementById('notOwner').classList.add('hidden');
-                loadAllValues();
-                setInterval(loadAllValues, 10000);
-            } else {
-                document.getElementById('ownerPanel').classList.add('hidden');
-                document.getElementById('notOwner').classList.remove('hidden');
-            }
-        } catch (err) {
-            document.getElementById('networkStatus').innerText = '检查 Owner 失败';
-        }
-    }
-
     async function loadAllValues() {
-        if (!isOwner) return;
+        if (!contract) return;
         try {
             const [gas, hold, airdrop, swap, transfer, lp, change] = await Promise.all([
                 contract.methods.gasForProcessing().call(),
@@ -290,10 +273,16 @@
             document.getElementById('currentTransferFee').textContent = transfer ? '启用' : '关闭';
             document.getElementById('currentLpAddr').textContent = lp.slice(0,6) + '...' + lp.slice(-4);
             document.getElementById('currentChangeTax').textContent = change ? '启用' : '已禁用';
-        } catch (err) {}
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     async function sendTx(method) {
+        if (!account) {
+            document.getElementById('txStatus').textContent = '请先连接钱包';
+            return;
+        }
         document.getElementById('txStatus').textContent = '提交中...';
         try {
             const gas = await method.estimateGas({ from: account });
@@ -305,7 +294,7 @@
             setTimeout(loadAllValues, 3000);
         } catch (err) {
             document.getElementById('txStatus').innerHTML = `
-                <span class="text-red-400">失败：</span> ${err.message.includes('denied') ? '用户取消' : err.message}
+                <span class="text-red-400">失败：</span> ${err.message.includes('not the owner') ? '你不是 Owner' : err.message.includes('denied') ? '用户取消' : err.message}
             `;
         }
     }
