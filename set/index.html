@@ -194,7 +194,7 @@
 <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
 <script>
     const CONTRACT = '0xa930bbe6062cb0d67a2152f30a63adb846e58fe0';
-    const RPC_URL = 'https://gatelayer-mainnet.gatenode.cc/'; // 严格使用你指定的 RPC
+    const RPC_URL = 'https://gatelayer-mainnet.gatenode.cc/';
     const CHAIN_ID = 10088;
     const DECIMALS = 1;
 
@@ -215,6 +215,16 @@
         {"inputs":[],"name":"disableChangeTax","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
 
+    const chains = {
+        GateLayer: {
+            chainId: CHAIN_ID,
+            chainName: 'Gate Layer',
+            rpcUrl: RPC_URL,
+            blockExplorer: 'https://www.gatescan.org/gatelayer/',
+            nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 }
+        }
+    };
+
     let web3, account, contract;
 
     // 辅助函数
@@ -233,73 +243,56 @@
         return (Number(value) / 10 ** DECIMALS).toLocaleString(undefined, { maximumFractionDigits: DECIMALS });
     }
 
-    // 初始化 Web3（只用指定 RPC）
-    async function initWeb3() {
+    // 初始化 Web3（严格按 GDOG 方式）
+    async function initializeWeb3() {
         if (!window.ethereum) {
             document.getElementById('networkStatus').innerText = '请安装 MetaMask';
-            return false;
+            return;
         }
-        web3 = new Web3(RPC_URL);
-        try {
-            const networkId = await web3.eth.net.getId();
-            if (networkId !== CHAIN_ID) {
-                document.getElementById('networkStatus').innerText = `网络错误：当前 ${networkId}，应为 ${CHAIN_ID}`;
-                return false;
-            }
-            return true;
-        } catch (e) {
-            document.getElementById('networkStatus').innerText = 'RPC 连接失败';
-            return false;
-        }
-    }
-
-    // 连接钱包
-    async function initializeWeb3() {
-        document.getElementById('networkStatus').innerText = '正在连接...';
-        if (!await initWeb3()) return;
-
+        web3 = new Web3(window.ethereum); // 只用 window.ethereum
         try {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             account = (await web3.eth.getAccounts())[0];
             document.getElementById('connectWalletButton').innerText = `已连接: ${account.slice(0,6)}...${account.slice(-4)}`;
             document.getElementById('walletStatus').innerHTML = `钱包地址: <span class="font-mono text-blue-400">${account}</span>`;
 
-            await switchNetwork();
+            await switchNetwork('GateLayer');
             contract = new web3.eth.Contract(ABI, CONTRACT);
 
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('networkStatus').innerText = '已连接 GateLayer (ID: 10088)';
-            loadAllValuesWithRetry(); // 立即刷新
+            loadAllValuesWithRetry();
             setInterval(loadAllValuesWithRetry, 10000);
         } catch (error) {
             document.getElementById('networkStatus').innerText = '连接失败: ' + (error.message || '未知错误');
         }
     }
 
-    // 切换网络
-    async function switchNetwork() {
+    // 切换网络（同 GDOG）
+    async function switchNetwork(chain) {
+        const config = chains[chain];
         try {
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: `0x${CHAIN_ID.toString(16)}` }]
+                params: [{ chainId: `0x${config.chainId.toString(16)}` }]
             });
         } catch (error) {
             if (error.code === 4902) {
                 await window.ethereum.request({
                     method: 'wallet_addEthereumChain',
                     params: [{
-                        chainId: `0x${CHAIN_ID.toString(16)}`,
-                        chainName: 'Gate Layer',
-                        rpcUrls: [RPC_URL],
-                        nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 },
-                        blockExplorerUrls: ['https://www.gatescan.org/gatelayer/']
+                        chainId: `0x${config.chainId.toString(16)}`,
+                        chainName: config.chainName,
+                        rpcUrls: [config.rpcUrl],
+                        nativeCurrency: config.nativeCurrency,
+                        blockExplorerUrls: [config.blockExplorer]
                     }]
                 });
             } else throw error;
         }
     }
 
-    // 带重试的读取（只用指定 RPC）
+    // 带重试的读取
     async function loadAllValuesWithRetry() {
         for (let i = 0; i < 3; i++) {
             try {
@@ -308,14 +301,14 @@
             } catch (e) {
                 console.log(`读取失败，重试 ${i+1}/3`, e);
                 if (i === 2) {
-                    document.getElementById('txStatus').innerHTML = '<span class="text-red-400">读取失败：RPC 超时或网络异常</span>';
+                    document.getElementById('txStatus').innerHTML = '<span class="text-red-400">读取失败：网络异常</span>';
                 }
             }
         }
     }
 
     async function loadAllValues() {
-        if (!contract) throw new Error('Contract not ready');
+        if (!contract) return;
         const [gas, hold, airdrop, swap, transfer, lp, change] = await Promise.all([
             contract.methods.gasForProcessing().call(),
             contract.methods.mushHoldNum().call(),
