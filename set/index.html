@@ -22,9 +22,12 @@
             <img src="https://raw.githubusercontent.com/WoofingLabs/Grabbit/refs/heads/main/images/1.png" alt="Logo" class="w-10 h-10 rounded-full">
             <span class="text-xl font-bold text-blue-400">Grabbit 管理面板</span>
         </div>
-        <button id="connectWallet" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-sm font-medium transition">
-            连接钱包
-        </button>
+        <div class="flex items-center space-x-3">
+            <span id="networkStatus" class="text-sm text-gray-400">未连接网络</span>
+            <button id="connectWallet" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-sm font-medium transition">
+                连接钱包
+            </button>
+        </div>
     </div>
 </header>
 
@@ -162,6 +165,15 @@
 </main>
 
 <script>
+    // GateLayer 网络配置（与原页面一致）
+    const GATE_LAYER = {
+        chainId: '0x' + Number(10088).toString(16), // 0x2728
+        chainName: 'Gate Layer',
+        rpcUrls: ['https://gatelayer-mainnet.gatenode.cc/'],
+        nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 },
+        blockExplorerUrls: ['https://www.gatescan.org/gatelayer/']
+    };
+
     const CONTRACT = '0xa930bbe6062cb0d67a2152f30a63adb846e58fe0';
     const ABI = [
         {"inputs":[],"name":"gasForProcessing","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -172,7 +184,7 @@
         {"inputs":[],"name":"generateLpReceiverAddr","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"enableChangeTax","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-        {"inputs":[{"type":"uint256"}],"name":"setGasForProcessing","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"uint256"}],"name":"gasForProcessing","outputs":[],"stateMutability":"nonpayable","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setMinHoldCount","outputs":[],"stateMutability":"nonpayable","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setAirdropNumbs","outputs":[],"stateMutability":"nonpayable","type":"function"},
         {"inputs":[{"type":"uint256"}],"name":"setSwapAtAmount","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -183,6 +195,32 @@
 
     let web3, contract, account, isOwner = false;
 
+    // 切换到 GateLayer 网络
+    async function switchToGateLayer() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: GATE_LAYER.chainId }]
+            });
+            document.getElementById('networkStatus').innerHTML = '<span class="text-green-400">GateLayer 已连接</span>';
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [GATE_LAYER]
+                    });
+                    document.getElementById('networkStatus').innerHTML = '<span class="text-green-400">GateLayer 已添加并连接</span>';
+                } catch (addError) {
+                    document.getElementById('networkStatus').innerHTML = '<span class="text-red-400">添加网络失败</span>';
+                }
+            } else {
+                document.getElementById('networkStatus').innerHTML = '<span class="text-red-400">切换网络失败</span>';
+            }
+        }
+    }
+
+    // 连接钱包 + 强制切换网络
     document.getElementById('connectWallet').addEventListener('click', async () => {
         if (!window.ethereum) {
             alert('请安装 MetaMask');
@@ -193,6 +231,16 @@
             web3 = new Web3(window.ethereum);
             [account] = await web3.eth.getAccounts();
             contract = new web3.eth.Contract(ABI, CONTRACT);
+
+            // 强制切换网络
+            await switchToGateLayer();
+
+            // 检查链ID
+            const chainId = await web3.eth.getChainId();
+            if (chainId !== 10088) {
+                document.getElementById('networkStatus').innerHTML = '<span class="text-red-400">请手动切换到 GateLayer</span>';
+                return;
+            }
 
             const owner = await contract.methods.owner().call();
             isOwner = owner.toLowerCase() === account.toLowerCase();
@@ -213,6 +261,7 @@
             }
         } catch (err) {
             document.getElementById('walletStatus').textContent = '连接失败';
+            document.getElementById('networkStatus').innerHTML = '<span class="text-red-400">连接错误</span>';
         }
     });
 
@@ -259,7 +308,7 @@
         }
     }
 
-    function setGasForProcessing(val) { sendTx(contract.methods.setGasForProcessing(val)); }
+    function setGasForProcessing(val) { sendTx(contract.methods.gasForProcessing(val)); }
     function setMinHoldCount(val) { sendTx(contract.methods.setMinHoldCount(val)); }
     function setAirdropNumbs(val) { sendTx(contract.methods.setAirdropNumbs(val)); }
     function setSwapAtAmount(val) { sendTx(contract.methods.setSwapAtAmount(val)); }
