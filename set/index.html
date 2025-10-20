@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grabbit 合约管理面板</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/WoofingLabs/Grabbit/refs/heads/main/images/1.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <style>
+        .glow { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .bg-grid { background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen">
+
+<header class="fixed top-0 w-full z-50 bg-gray-900/95 backdrop-blur border-b border-blue-500/20">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <img src="https://raw.githubusercontent.com/WoofingLabs/Grabbit/refs/heads/main/images/1.png" alt="Logo" class="w-10 h-10 rounded-full">
+            <span class="text-xl font-bold text-blue-400">Grabbit 管理面板</span>
+        </div>
+        <button id="connectWallet" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-sm font-medium transition">
+            连接钱包
+        </button>
+    </div>
+</header>
+
+<main class="pt-24 pb-16 container mx-auto px-4 max-w-5xl">
+
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-blue-400 mb-2">合约参数实时监控 & 一键优化</h1>
+        <p class="text-gray-400">合约地址: <span class="font-mono text-sm">0xa930bbe6062cb0d67a2152f30a63adb846e58fe0</span></p>
+        <p id="walletStatus" class="mt-4 text-lg">未连接钱包</p>
+    </div>
+
+    <!-- Owner 控制台 -->
+    <div id="ownerPanel" class="hidden space-y-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- 1. gasForProcessing -->
+            <div class="bg-gray-800/50 backdrop-blur border border-green-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-green-400 flex items-center">
+                    <i class="fa fa-shield mr-2"></i> 关闭自动分红处理
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：防止每次交易遍历分红队列，<strong>彻底避免卡死</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前值: <span id="currentGas" class="font-mono">读取中...</span></span>
+                    <span class="text-xs text-yellow-400">建议: 0</span>
+                </div>
+                <button onclick="setGasForProcessing(0)" class="mt-3 w-full py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-medium">
+                    一键设为 0（推荐）
+                </button>
+            </div>
+
+            <!-- 2. mushHoldNum -->
+            <div class="bg-gray-800/50 backdrop-blur border border-yellow-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-yellow-400 flex items-center">
+                    <i class="fa fa-lock mr-2"></i> 提高分红门槛
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：只有持有 ≥1% 才能分红，<strong>防机器人刷名单</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前值: <span id="currentHold" class="font-mono">读取中...</span></span>
+                    <span class="text-xs text-yellow-400">建议: 2.1亿</span>
+                </div>
+                <button onclick="setMinHoldCount('2100000000')" class="mt-3 w-full py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm font-medium">
+                    一键设为 1%（2.1亿）
+                </button>
+            </div>
+
+            <!-- 3. airdropNumbs -->
+            <div class="bg-gray-800/50 backdrop-blur border border-red-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-red-400 flex items-center">
+                    <i class="fa fa-ban mr-2"></i> 关闭空投功能
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：防止生成垃圾地址，<strong>减少分红队列膨胀</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前值: <span id="currentAirdrop" class="font-mono">读取中...</span></span>
+                    <span class="text-xs text-red-400">建议: 0</span>
+                </div>
+                <button onclick="setAirdropNumbs(0)" class="mt-3 w-full py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-medium">
+                    一键关闭空投
+                </button>
+            </div>
+
+            <!-- 4. swapAtAmount -->
+            <div class="bg-gray-800/50 backdrop-blur border border-purple-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-purple-400 flex items-center">
+                    <i class="fa fa-exchange mr-2"></i> 提高 Swap 门槛
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：余额 ≥1% 才自动 swap，<strong>减少自动操作</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前值: <span id="currentSwap" class="font-mono">读取中...</span></span>
+                    <span class="text-xs text-purple-400">建议: 2.1亿</span>
+                </div>
+                <button onclick="setSwapAtAmount('2100000000')" class="mt-3 w-full py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium">
+                    一键设为 1%
+                </button>
+            </div>
+
+            <!-- 5. enableTransferFee -->
+            <div class="bg-gray-800/50 backdrop-blur border border-cyan-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-cyan-400 flex items-center">
+                    <i class="fa fa-credit-card mr-2"></i> 关闭转账税
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：P2P 转账不收税，<strong>提升用户体验</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前: <span id="currentTransferFee" class="font-mono">读取中...</span></span>
+                    <span class="text-xs text-cyan-400">建议: false</span>
+                </div>
+                <button onclick="setEnableTransferFee(false)" class="mt-3 w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-sm font-medium">
+                    一键关闭转账税
+                </button>
+            </div>
+
+            <!-- 6. generateLpReceiverAddr -->
+            <div class="bg-gray-800/50 backdrop-blur border border-orange-500/30 rounded-xl p-5 glow">
+                <h3 class="font-bold text-orange-400 flex items-center">
+                    <i class="fa fa-plug mr-2"></i> 设置 LP 接收地址
+                </h3>
+                <p class="text-xs text-gray-300 mt-1">用途：防止自动加池失败，<strong>资金不被卡住</strong></p>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm">当前: <span id="currentLpAddr" class="font-mono text-xs">读取中...</span></span>
+                    <span class="text-xs text-orange-400">建议: 黑洞</span>
+                </div>
+                <button onclick="setGenerateLpReceiverAddr('0x000000000000000000000000000000000000dEaD')" class="mt-3 w-full py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm font-medium">
+                    一键设为黑洞地址
+                </button>
+            </div>
+
+        </div>
+
+        <!-- 7. 永久关闭税收调整 -->
+        <div class="mt-8 bg-gray-800/50 backdrop-blur border border-pink-500/30 rounded-xl p-5 glow text-center">
+            <h3 class="font-bold text-pink-400 flex items-center justify-center">
+                <i class="fa fa-lock mr-2"></i> 永久关闭税收调整
+            </h3>
+            <p class="text-xs text-gray-300 mt-1">用途：防止未来税率被修改导致无法交易，<strong>永久锁定</strong></p>
+            <div class="mt-3">
+                <span class="text-sm">当前状态: <span id="currentChangeTax" class="font-mono">读取中...</span></span>
+            </div>
+            <button onclick="disableChangeTax()" class="mt-3 px-6 py-2 bg-pink-600 hover:bg-pink-700 rounded text-sm font-medium">
+                一键永久禁用税收修改
+            </button>
+        </div>
+
+        <div class="mt-8 text-center">
+            <p id="txStatus" class="text-sm text-gray-400"></p>
+            <p class="text-xs text-gray-500 mt-4">状态每 10 秒自动刷新</p>
+        </div>
+    </div>
+
+    <!-- 非 Owner 提示 -->
+    <div id="notOwner" class="hidden text-center py-20">
+        <p class="text-2xl text-gray-400">你不是合约拥有者，无法查看或操作参数。</p>
+        <p class="text-sm text-gray-500 mt-4">请使用部署者钱包连接。</p>
+    </div>
+
+</main>
+
+<script>
+    const CONTRACT = '0xa930bbe6062cb0d67a2152f30a63adb846e58fe0';
+    const ABI = [
+        {"inputs":[],"name":"gasForProcessing","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"mushHoldNum","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"airdropNumbs","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"swapAtAmount","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"enableTransferFee","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"generateLpReceiverAddr","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"enableChangeTax","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+        {"inputs":[{"type":"uint256"}],"name":"setGasForProcessing","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"uint256"}],"name":"setMinHoldCount","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"uint256"}],"name":"setAirdropNumbs","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"uint256"}],"name":"setSwapAtAmount","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"bool"}],"name":"setEnableTransferFee","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[{"type":"address"}],"name":"setGenerateLpReceiverAddr","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        {"inputs":[],"name":"disableChangeTax","outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ];
+
+    let web3, contract, account, isOwner = false;
+
+    document.getElementById('connectWallet').addEventListener('click', async () => {
+        if (!window.ethereum) {
+            alert('请安装 MetaMask');
+            return;
+        }
+        try {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            web3 = new Web3(window.ethereum);
+            [account] = await web3.eth.getAccounts();
+            contract = new web3.eth.Contract(ABI, CONTRACT);
+
+            const owner = await contract.methods.owner().call();
+            isOwner = owner.toLowerCase() === account.toLowerCase();
+
+            document.getElementById('walletStatus').innerHTML = `
+                已连接: <span class="font-mono text-blue-400">${account.slice(0,6)}...${account.slice(-4)}</span>
+                ${isOwner ? '<span class="text-green-400">Owner</span>' : '<span class="text-red-400">非 Owner</span>'}
+            `;
+
+            if (isOwner) {
+                document.getElementById('ownerPanel').classList.remove('hidden');
+                document.getElementById('notOwner').classList.add('hidden');
+                loadAllValues();
+                setInterval(loadAllValues, 10000);
+            } else {
+                document.getElementById('ownerPanel').classList.add('hidden');
+                document.getElementById('notOwner').classList.remove('hidden');
+            }
+        } catch (err) {
+            document.getElementById('walletStatus').textContent = '连接失败';
+        }
+    });
+
+    async function loadAllValues() {
+        if (!isOwner) return;
+        try {
+            const [gas, hold, airdrop, swap, transfer, lp, change] = await Promise.all([
+                contract.methods.gasForProcessing().call(),
+                contract.methods.mushHoldNum().call(),
+                contract.methods.airdropNumbs().call(),
+                contract.methods.swapAtAmount().call(),
+                contract.methods.enableTransferFee().call(),
+                contract.methods.generateLpReceiverAddr().call(),
+                contract.methods.enableChangeTax().call()
+            ]);
+            document.getElementById('currentGas').textContent = gas;
+            document.getElementById('currentHold').textContent = Number(hold) / 10;
+            document.getElementById('currentAirdrop').textContent = airdrop;
+            document.getElementById('currentSwap').textContent = Number(swap) / 10;
+            document.getElementById('currentTransferFee').textContent = transfer;
+            document.getElementById('currentLpAddr').textContent = lp.slice(0, 6) + '...' + lp.slice(-4);
+            document.getElementById('currentChangeTax').textContent = change ? '启用' : '已禁用';
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function sendTx(method, params = [], msg) {
+        document.getElementById('txStatus').textContent = '提交中...';
+        try {
+            const gas = await method.estimateGas({ from: account });
+            const tx = await method.send({ from: account, gas: gas * 2 });
+            document.getElementById('txStatus').innerHTML = `
+                <span class="text-green-400">成功！</span> 
+                <a href="https://www.gatescan.org/gatelayer/tx/${tx.transactionHash}" target="_blank" class="text-blue-400 underline">
+                    查看交易
+                </a>
+            `;
+            setTimeout(loadAllValues, 3000);
+        } catch (err) {
+            document.getElementById('txStatus').innerHTML = `
+                <span class="text-red-400">失败：</span> ${err.message.includes('User denied') ? '用户取消' : err.message}
+            `;
+        }
+    }
+
+    function setGasForProcessing(val) { sendTx(contract.methods.setGasForProcessing(val)); }
+    function setMinHoldCount(val) { sendTx(contract.methods.setMinHoldCount(val)); }
+    function setAirdropNumbs(val) { sendTx(contract.methods.setAirdropNumbs(val)); }
+    function setSwapAtAmount(val) { sendTx(contract.methods.setSwapAtAmount(val)); }
+    function setEnableTransferFee(val) { sendTx(contract.methods.setEnableTransferFee(val)); }
+    function setGenerateLpReceiverAddr(addr) { sendTx(contract.methods.setGenerateLpReceiverAddr(addr)); }
+    function disableChangeTax() { sendTx(contract.methods.disableChangeTax()); }
+</script>
+
+</body>
+</html>
