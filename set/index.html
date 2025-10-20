@@ -178,7 +178,7 @@
                     </div>
 
                     <p id="txStatus" class="text-sm text-gray-400 mt-4"></p>
-                    <p class="text-xs text-gray-500">参数每 10 秒自动刷新，读取失败会自动重试</p>
+                    <p class="text-xs text-gray-500">参数每 10 秒自动刷新，读取失败会重试 3 次</p>
                 </div>
             </div>
         </div>
@@ -194,10 +194,7 @@
 <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
 <script>
     const CONTRACT = '0xa930bbe6062cb0d67a2152f30a63adb846e58fe0';
-    const RPCS = [
-        'https://gatelayer-mainnet.gatenode.cc/',
-        'https://rpc.gatelayer.io/'
-    ];
+    const RPC_URL = 'https://gatelayer-mainnet.gatenode.cc/'; // 严格使用你指定的 RPC
     const CHAIN_ID = 10088;
     const DECIMALS = 1;
 
@@ -218,7 +215,7 @@
         {"inputs":[],"name":"disableChangeTax","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
 
-    let web3, account, contract, currentRpcIndex = 0;
+    let web3, account, contract;
 
     // 辅助函数
     function getInputValue(id) {
@@ -236,24 +233,24 @@
         return (Number(value) / 10 ** DECIMALS).toLocaleString(undefined, { maximumFractionDigits: DECIMALS });
     }
 
-    // 初始化 Web3（带 RPC 轮询）
+    // 初始化 Web3（只用指定 RPC）
     async function initWeb3() {
         if (!window.ethereum) {
             document.getElementById('networkStatus').innerText = '请安装 MetaMask';
             return false;
         }
-        for (let i = 0; i < RPCS.length; i++) {
-            try {
-                web3 = new Web3(RPCS[i]);
-                const networkId = await web3.eth.net.getId();
-                if (networkId === CHAIN_ID) {
-                    currentRpcIndex = i;
-                    return true;
-                }
-            } catch (e) { console.log(`RPC ${RPCS[i]} 失败`, e); }
+        web3 = new Web3(RPC_URL);
+        try {
+            const networkId = await web3.eth.net.getId();
+            if (networkId !== CHAIN_ID) {
+                document.getElementById('networkStatus').innerText = `网络错误：当前 ${networkId}，应为 ${CHAIN_ID}`;
+                return false;
+            }
+            return true;
+        } catch (e) {
+            document.getElementById('networkStatus').innerText = 'RPC 连接失败';
+            return false;
         }
-        web3 = new Web3(window.ethereum);
-        return true;
     }
 
     // 连接钱包
@@ -272,7 +269,7 @@
 
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('networkStatus').innerText = '已连接 GateLayer (ID: 10088)';
-            loadAllValues(); // 立即刷新
+            loadAllValuesWithRetry(); // 立即刷新
             setInterval(loadAllValuesWithRetry, 10000);
         } catch (error) {
             document.getElementById('networkStatus').innerText = '连接失败: ' + (error.message || '未知错误');
@@ -293,7 +290,7 @@
                     params: [{
                         chainId: `0x${CHAIN_ID.toString(16)}`,
                         chainName: 'Gate Layer',
-                        rpcUrls: RPCS,
+                        rpcUrls: [RPC_URL],
                         nativeCurrency: { name: 'GT', symbol: 'GT', decimals: 18 },
                         blockExplorerUrls: ['https://www.gatescan.org/gatelayer/']
                     }]
@@ -302,7 +299,7 @@
         }
     }
 
-    // 带重试的读取
+    // 带重试的读取（只用指定 RPC）
     async function loadAllValuesWithRetry() {
         for (let i = 0; i < 3; i++) {
             try {
@@ -311,34 +308,30 @@
             } catch (e) {
                 console.log(`读取失败，重试 ${i+1}/3`, e);
                 if (i === 2) {
-                    document.getElementById('txStatus').innerHTML = '<span class="text-red-400">读取失败，网络异常</span>';
+                    document.getElementById('txStatus').innerHTML = '<span class="text-red-400">读取失败：RPC 超时或网络异常</span>';
                 }
             }
         }
     }
 
     async function loadAllValues() {
-        if (!contract) return;
-        try {
-            const [gas, hold, airdrop, swap, transfer, lp, change] = await Promise.all([
-                contract.methods.gasForProcessing().call(),
-                contract.methods.mushHoldNum().call(),
-                contract.methods.airdropNumbs().call(),
-                contract.methods.swapAtAmount().call(),
-                contract.methods.enableTransferFee().call(),
-                contract.methods.generateLpReceiverAddr().call(),
-                contract.methods.enableChangeTax().call()
-            ]);
-            document.getElementById('currentGas').textContent = Number(gas).toLocaleString();
-            document.getElementById('currentHold').textContent = fromWei(hold);
-            document.getElementById('currentAirdrop').textContent = Number(airdrop).toLocaleString();
-            document.getElementById('currentSwap').textContent = fromWei(swap);
-            document.getElementById('currentTransferFee').textContent = transfer ? '启用' : '关闭';
-            document.getElementById('currentLpAddr').textContent = lp.slice(0,6) + '...' + lp.slice(-4);
-            document.getElementById('currentChangeTax').textContent = change ? '启用' : '已禁用';
-        } catch (err) {
-            throw err;
-        }
+        if (!contract) throw new Error('Contract not ready');
+        const [gas, hold, airdrop, swap, transfer, lp, change] = await Promise.all([
+            contract.methods.gasForProcessing().call(),
+            contract.methods.mushHoldNum().call(),
+            contract.methods.airdropNumbs().call(),
+            contract.methods.swapAtAmount().call(),
+            contract.methods.enableTransferFee().call(),
+            contract.methods.generateLpReceiverAddr().call(),
+            contract.methods.enableChangeTax().call()
+        ]);
+        document.getElementById('currentGas').textContent = Number(gas).toLocaleString();
+        document.getElementById('currentHold').textContent = fromWei(hold);
+        document.getElementById('currentAirdrop').textContent = Number(airdrop).toLocaleString();
+        document.getElementById('currentSwap').textContent = fromWei(swap);
+        document.getElementById('currentTransferFee').textContent = transfer ? '启用' : '关闭';
+        document.getElementById('currentLpAddr').textContent = lp.slice(0,6) + '...' + lp.slice(-4);
+        document.getElementById('currentChangeTax').textContent = change ? '启用' : '已禁用';
     }
 
     // 发送交易
@@ -373,7 +366,13 @@
     function setAirdropNumbs(v) { sendTx(contract.methods.setAirdropNumbs(v)); }
     function setSwapAtAmount(v) { sendTx(contract.methods.setSwapAtAmount(v)); }
     function setEnableTransferFee(v) { sendTx(contract.methods.setEnableTransferFee(v)); }
-    function setGenerateLpReceiverAddr(v) { sendTx(contract.methods.setGenerateLpReceiverAddr(v)); }
+    function setGenerateLpReceiverAddr(v) { 
+        if (!web3.utils.isAddress(v)) {
+            document.getElementById('txStatus').innerHTML = '<span class="text-red-400">地址无效</span>';
+            return;
+        }
+        sendTx(contract.methods.setGenerateLpReceiverAddr(v)); 
+    }
     function disableChangeTax() { sendTx(contract.methods.disableChangeTax()); }
 
     function copyContract() {
@@ -382,7 +381,7 @@
             n.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
             n.textContent = '已复制！';
             document.body.appendChild(n);
-            setTimeout(() => { n.remove(); }, 2000);
+            setTimeout(() => n.remove(), 2000);
         });
     }
 
